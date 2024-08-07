@@ -69,7 +69,9 @@ func TestHandlerResolver(t *testing.T) {
 				return
 			}
 
-			defer result.Body.Close()
+			defer func(Body io.ReadCloser) {
+				_ = Body.Close()
+			}(result.Body)
 			b, e := io.ReadAll(result.Body)
 			require.NoError(t, e)
 			u := string(b)
