@@ -69,11 +69,12 @@ func TestHandlerResolver(t *testing.T) {
 				return
 			}
 
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(result.Body)
 			b, e := io.ReadAll(result.Body)
 			require.NoError(t, e)
+
+			e = result.Body.Close()
+			require.NoError(t, e)
+
 			u := string(b)
 
 			require.Greater(t, len(u), 0)
@@ -91,6 +92,9 @@ func TestHandlerResolver(t *testing.T) {
 
 			assert.Equal(t, tt.want.statusCodeGet, result.StatusCode)
 			assert.Equal(t, tt.want.url, result.Header.Get("Location"))
+
+			e = result.Body.Close()
+			require.NoError(t, e)
 		})
 	}
 }
