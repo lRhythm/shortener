@@ -1,0 +1,111 @@
+package httptransport
+
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/lRhythm/shortener/internal/service"
+	"github.com/lRhythm/shortener/internal/storage"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"testing"
+)
+
+func TestCreateHandler(t *testing.T) {
+	s, _ := New(
+		service.New(
+			service.WithStorage(storage.NewInMemory()),
+		),
+	)
+	f := fiber.New()
+	f.Post("/", s.createHandler)
+	tests := []struct {
+		name   string
+		route  string
+		body   string
+		status int
+	}{
+		{
+			name:   "1. 201 - success",
+			route:  "/",
+			body:   "https://ya.ru",
+			status: fiber.StatusCreated,
+		},
+		{
+			name:   "2. 400 - error: bad url in body",
+			route:  "/",
+			body:   "WRONG",
+			status: fiber.StatusBadRequest,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, test.route, strings.NewReader(test.body))
+			resp, _ := f.Test(req, -1)
+			assert.Equal(t, test.status, resp.StatusCode)
+			b, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			err = resp.Body.Close()
+			require.NoError(t, err)
+			r := string(b)
+			if test.status == fiber.StatusCreated {
+				assert.Equal(t, len(r) > 0, true)
+			}
+			if test.status == fiber.StatusBadRequest {
+				assert.Equal(t, len(r) == 0, true)
+			}
+		})
+	}
+}
+
+func TestGetHandler(t *testing.T) {
+	logic := service.New(
+		service.WithStorage(storage.NewInMemory()),
+	)
+
+	// Создание в хранилище сокращенного URL для дальнейшей проверки.
+	ou := "https://ya.ru"
+	su, _ := logic.CreateShortURL(ou, "http://localhost:8080")
+	u, _ := url.Parse(su)
+
+	s, _ := New(logic)
+	f := fiber.New()
+	f.Get("/:id", s.getHandler)
+
+	tests := []struct {
+		name     string
+		route    string
+		id       string
+		status   int
+		location string
+	}{
+		{
+			name:     "1. 307 - success",
+			route:    u.Path,
+			status:   fiber.StatusTemporaryRedirect,
+			location: ou,
+		},
+		{
+			name:   "2. 400 - error: short url not found",
+			route:  "/WRONG",
+			status: fiber.StatusBadRequest,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			log.Println(test.route)
+			req := httptest.NewRequest(http.MethodGet, test.route, nil)
+			resp, _ := f.Test(req, -1)
+			assert.Equal(t, test.status, resp.StatusCode)
+			err := resp.Body.Close()
+			require.NoError(t, err)
+			if test.status == fiber.StatusTemporaryRedirect {
+				assert.Equal(t, test.location, resp.Header.Get("Location"))
+			}
+		})
+	}
+}

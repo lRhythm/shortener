@@ -1,20 +1,20 @@
-package server
+package service
 
 import (
 	"math/rand"
 	"time"
 )
 
-func (s *Server) genID() string {
+func (c *Client) genKey() string {
 	var (
 		charset    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 		charsetLen = len(charset)
-		IDLen      = 8
+		keyLen     = 8
 	)
 	rand.New(rand.NewSource(time.Now().UnixNano()))
-	ID := make([]byte, IDLen)
-	for i := range ID {
-		ID[i] = charset[rand.Intn(charsetLen)]
+	key := make([]byte, keyLen)
+	for i := range key {
+		key[i] = charset[rand.Intn(charsetLen)]
 	}
-	return string(ID)
+	return string(key)
 }
