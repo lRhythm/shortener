@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"flag"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -52,12 +53,11 @@ func (p *path) String() string {
 }
 
 func (p *path) Set(v string) error {
-	for _, s := range []string{"#", "?", "//"} { // Need more conditions ...
-		if strings.Contains(v, s) {
-			return errors.New("invalid path prefix")
-		}
+	u, err := url.Parse(v)
+	if err != nil {
+		return err
 	}
-	p.prefix = v
+	p.prefix = u.Path
 	return nil
 }
 
@@ -75,7 +75,7 @@ func New() *Cfg {
 	}
 	if flag.Lookup("b") == nil {
 		_ = flag.Value(p)
-		flag.Var(p, "b", "Route path prefix (example: http://localhost:8080/<prefix>)")
+		flag.Var(p, "b", "Net address with route prefix (example: http://localhost:8080/prefix)")
 	}
 	flag.Parse()
 	return &Cfg{
