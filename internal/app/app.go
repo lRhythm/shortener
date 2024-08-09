@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/lRhythm/shortener/internal/config"
 	"github.com/lRhythm/shortener/internal/service"
 	"github.com/lRhythm/shortener/internal/storage"
 	"github.com/lRhythm/shortener/internal/transport/httptransport"
@@ -9,6 +10,7 @@ import (
 
 func Start() {
 	s, e := httptransport.New(
+		config.New(),
 		service.New(
 			service.WithStorage(storage.NewInMemory()),
 		),

@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-func (c *Client) CreateShortURL(originalURL, host string) (string, error) {
+func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
 	_, err := url.ParseRequestURI(originalURL)
 	if err != nil {
 		return "", errors.New("invalid URL")
@@ -15,7 +15,7 @@ func (c *Client) CreateShortURL(originalURL, host string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s, _ := url.JoinPath(host, keyURL)
+	s, _ := url.JoinPath(address, keyURL)
 	return s, nil
 }
 

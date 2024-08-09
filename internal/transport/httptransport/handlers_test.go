@@ -2,6 +2,7 @@ package httptransport
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/lRhythm/shortener/internal/config"
 	"github.com/lRhythm/shortener/internal/service"
 	"github.com/lRhythm/shortener/internal/storage"
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,7 @@ import (
 
 func TestCreateHandler(t *testing.T) {
 	s, _ := New(
+		config.New(),
 		service.New(
 			service.WithStorage(storage.NewInMemory()),
 		),
@@ -72,7 +74,10 @@ func TestGetHandler(t *testing.T) {
 	su, _ := logic.CreateShortURL(ou, "http://localhost:8080")
 	u, _ := url.Parse(su)
 
-	s, _ := New(logic)
+	s, _ := New(
+		config.New(),
+		logic,
+	)
 	f := fiber.New()
 	f.Get("/:id", s.getHandler)
 
