@@ -17,15 +17,15 @@ func New() (*Cfg, error) {
 func (c *Cfg) withFlags() *Cfg {
 	sa := new(serverAddress)
 	bu := new(baseURL)
-	if c.ServerAddress == "" {
-		_ = flag.Value(sa)
-		flag.Var(sa, "a", "Net address host:port")
-	}
-	if c.BaseURL == "" {
-		_ = flag.Value(bu)
-		flag.Var(bu, "b", "Net address with route prefix (example: http://localhost:8080/prefix)")
-	}
-	if c.ServerAddress == "" || c.BaseURL == "" {
+	if (flag.Lookup("a") == nil && c.ServerAddress == "") || (flag.Lookup("b") == nil && c.BaseURL == "") {
+		if c.ServerAddress == "" {
+			_ = flag.Value(sa)
+			flag.Var(sa, "a", "Net address host:port")
+		}
+		if c.BaseURL == "" {
+			_ = flag.Value(bu)
+			flag.Var(bu, "b", "Net address with route prefix (example: http://localhost:8080/prefix)")
+		}
 		flag.Parse()
 	}
 	if *sa != "" {
