@@ -9,14 +9,19 @@ import (
 )
 
 func Start() {
-	s, e := httptransport.New(
-		config.New(),
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	s, err := httptransport.New(
+		cfg,
 		service.New(
 			service.WithStorage(storage.NewInMemory()),
 		),
 	)
-	if e != nil {
-		log.Fatal(e)
+	if err != nil {
+		log.Fatal(err)
 	}
+
 	log.Fatal(s.Listen())
 }

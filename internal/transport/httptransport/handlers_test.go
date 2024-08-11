@@ -17,8 +17,9 @@ import (
 )
 
 func TestCreateHandler(t *testing.T) {
+	cfg, _ := config.New()
 	s, _ := New(
-		config.New(),
+		cfg,
 		service.New(
 			service.WithStorage(storage.NewInMemory()),
 		),
@@ -65,21 +66,21 @@ func TestCreateHandler(t *testing.T) {
 }
 
 func TestGetHandler(t *testing.T) {
+	cfg, _ := config.New()
 	logic := service.New(
 		service.WithStorage(storage.NewInMemory()),
 	)
+	s, _ := New(
+		cfg,
+		logic,
+	)
+	f := fiber.New()
+	f.Get("/:id", s.getHandler)
 
 	// Создание в хранилище сокращенного URL для дальнейшей проверки.
 	ou := "https://ya.ru"
 	su, _ := logic.CreateShortURL(ou, "http://localhost:8080")
 	u, _ := url.Parse(su)
-
-	s, _ := New(
-		config.New(),
-		logic,
-	)
-	f := fiber.New()
-	f.Get("/:id", s.getHandler)
 
 	tests := []struct {
 		name     string
