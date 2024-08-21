@@ -1,8 +1,9 @@
-package httptransport
+package rest
 
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/lRhythm/shortener/internal/config"
+	"github.com/lRhythm/shortener/internal/logs"
 	"github.com/lRhythm/shortener/internal/service"
 	"github.com/lRhythm/shortener/internal/storage"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,7 @@ import (
 func TestCreateHandler(t *testing.T) {
 	cfg, _ := config.New()
 	s, _ := New(
+		logs.New(),
 		cfg,
 		service.New(
 			service.WithStorage(storage.NewInMemory()),
@@ -71,6 +73,7 @@ func TestGetHandler(t *testing.T) {
 		service.WithStorage(storage.NewInMemory()),
 	)
 	s, _ := New(
+		logs.New(),
 		cfg,
 		logic,
 	)

@@ -2,26 +2,30 @@ package app
 
 import (
 	"github.com/lRhythm/shortener/internal/config"
+	"github.com/lRhythm/shortener/internal/logs"
 	"github.com/lRhythm/shortener/internal/service"
 	"github.com/lRhythm/shortener/internal/storage"
-	"github.com/lRhythm/shortener/internal/transport/httptransport"
-	"log"
+	"github.com/lRhythm/shortener/internal/transport/rest"
 )
 
 func Start() {
+	logger := logs.New()
+
 	cfg, err := config.New()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
-	s, err := httptransport.New(
+
+	s, err := rest.New(
+		logger,
 		cfg,
 		service.New(
 			service.WithStorage(storage.NewInMemory()),
 		),
 	)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
-	log.Fatal(s.Listen())
+	logger.Fatal(s.Listen())
 }
