@@ -3,12 +3,16 @@ package rest
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/sirupsen/logrus"
 	"time"
 )
 
 func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Server, error) {
+	if logs == nil {
+		return nil, errors.New("logs must not be nil")
+	}
 	if cfg == nil {
 		return nil, errors.New("config must not be nil")
 	}
@@ -39,6 +43,13 @@ func newFiberApp(logs *logrus.Logger) *fiber.App {
 				Format:     "{\"time\":\"${time}\", \"uri\": \"${protocol}://${host}${path}\", \"method\": \"${method}\", \"duration\": \"${latency}\", \"status\": \"${status}\", \"size\": \"${bytesSent}\"}\n",
 				Output:     logs.Out,
 				TimeFormat: time.DateTime,
+			},
+		),
+	)
+	app.Use(
+		compress.New(
+			compress.Config{
+				Level: compress.LevelBestSpeed,
 			},
 		),
 	)
