@@ -31,6 +31,10 @@ func (s *Server) Listen() error {
 	return s.app.Listen(s.cfg.Host())
 }
 
+func (s *Server) Shutdown() error {
+	return s.app.Shutdown()
+}
+
 func newFiberApp(logs *logrus.Logger) *fiber.App {
 	app := fiber.New(
 		fiber.Config{

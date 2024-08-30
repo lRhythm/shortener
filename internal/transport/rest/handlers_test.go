@@ -20,11 +20,12 @@ import (
 
 func TestApiCreateHandler(t *testing.T) {
 	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
 	s, _ := New(
 		logs.New(),
 		cfg,
 		service.New(
-			service.WithStorage(storage.NewInMemory()),
+			service.WithStorage(db),
 		),
 	)
 	f := fiber.New()
@@ -76,11 +77,12 @@ func TestApiCreateHandler(t *testing.T) {
 
 func TestCreateHandler(t *testing.T) {
 	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
 	s, _ := New(
 		logs.New(),
 		cfg,
 		service.New(
-			service.WithStorage(storage.NewInMemory()),
+			service.WithStorage(db),
 		),
 	)
 	f := fiber.New()
@@ -126,8 +128,9 @@ func TestCreateHandler(t *testing.T) {
 
 func TestGetHandler(t *testing.T) {
 	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
 	logic := service.New(
-		service.WithStorage(storage.NewInMemory()),
+		service.WithStorage(db),
 	)
 	s, _ := New(
 		logs.New(),

@@ -1,30 +1,48 @@
 package storage
 
-import "errors"
+import (
+	"errors"
+)
 
-type InMemory struct {
-	s map[string]string
+type Memory struct {
+	storage *[]Row
+	file    *file
 }
 
-func (m *InMemory) Put(key, value string) error {
-	_, ok := m.s[key]
-	if ok {
-		return errors.New("key already exists")
-	}
-	m.s[key] = value
+func (m *Memory) Put(shortURL, originalURL string) error {
+	*m.storage = append(*m.storage, newRow(shortURL, originalURL))
 	return nil
 }
 
-func (m *InMemory) Get(key string) (string, error) {
-	v, ok := m.s[key]
-	if !ok {
-		return "", errors.New("key not found")
+func (m *Memory) Get(shortURL string) (string, error) {
+	for _, row := range *m.storage {
+		if shortURL == row.ShortURL {
+			return row.OriginalURL, nil
+		}
 	}
-	return v, nil
+	return "", errors.New("short url not found")
 }
 
-func NewInMemory() *InMemory {
-	return &InMemory{
-		s: map[string]string{},
+func (m *Memory) Close() error {
+	defer m.file.close()
+	err := m.file.writeRows(m.storage)
+	if err != nil {
+		return err
 	}
+	return nil
+}
+
+func NewMemory(fname string) (*Memory, error) {
+	f, err := newFile(fname)
+	if err != nil {
+		return nil, err
+	}
+	s, err := f.readRows()
+	if err != nil {
+		return nil, err
+	}
+	return &Memory{
+		storage: s,
+		file:    f,
+	}, nil
 }

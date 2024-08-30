@@ -17,15 +17,24 @@ func New() (*Cfg, error) {
 func (c *Cfg) withFlags() *Cfg {
 	sa := new(serverAddress)
 	bu := new(baseURL)
-	if (flag.Lookup("a") == nil && c.ServerAddress == "") || (flag.Lookup("b") == nil && c.BaseURL == "") {
-		if c.ServerAddress == "" {
-			_ = flag.Value(sa)
-			flag.Var(sa, "a", "Net address host:port")
-		}
-		if c.BaseURL == "" {
-			_ = flag.Value(bu)
-			flag.Var(bu, "b", "Net address with route prefix (example: http://localhost:8080/prefix)")
-		}
+	fsp := new(fileStoragePath)
+	var needParse bool
+	if flag.Lookup("a") == nil && c.ServerAddress == "" {
+		_ = flag.Value(sa)
+		flag.Var(sa, "a", "Net address host:port")
+		needParse = true
+	}
+	if flag.Lookup("b") == nil && c.BaseURL == "" {
+		_ = flag.Value(bu)
+		flag.Var(bu, "b", "Net address with route prefix (example: http://localhost:8080/prefix)")
+		needParse = true
+	}
+	if flag.Lookup("f") == nil && c.FileStoragePath == "" {
+		_ = flag.Value(fsp)
+		flag.Var(fsp, "f", "File storage path (example: ./storage")
+		needParse = true
+	}
+	if needParse {
 		flag.Parse()
 	}
 	if *sa != "" {
@@ -33,6 +42,9 @@ func (c *Cfg) withFlags() *Cfg {
 	}
 	if *bu != "" {
 		c.BaseURL = *bu
+	}
+	if *fsp != "" {
+		c.FileStoragePath = *fsp
 	}
 	return c
 }
@@ -43,6 +55,9 @@ func (c *Cfg) withDefault() *Cfg {
 	}
 	if c.BaseURL == "" {
 		c.BaseURL = "http://localhost"
+	}
+	if c.FileStoragePath == "" {
+		c.FileStoragePath = "./storage"
 	}
 	return c
 }
