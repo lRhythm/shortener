@@ -62,6 +62,9 @@ func (f *file) write(b []byte) error {
 		return err
 	}
 	err = f.writer.WriteByte(ls)
+	if err != nil {
+		return err
+	}
 	return f.writer.Flush()
 }
 
