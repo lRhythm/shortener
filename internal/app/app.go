@@ -41,7 +41,7 @@ func Start() {
 	sCh := make(chan os.Signal, 1)
 	signal.Notify(sCh, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 	go func() {
-		_ = <-sCh
+		<-sCh
 		logger.Info("server shutting down")
 		_ = s.Shutdown()
 	}()

@@ -19,17 +19,17 @@ func (c *Cfg) withFlags() *Cfg {
 	bu := new(baseURL)
 	fsp := new(fileStoragePath)
 	var needParse bool
-	if flag.Lookup("a") == nil && c.ServerAddress == "" {
+	if flag.Lookup("a") == nil {
 		_ = flag.Value(sa)
 		flag.Var(sa, "a", "Net address host:port")
 		needParse = true
 	}
-	if flag.Lookup("b") == nil && c.BaseURL == "" {
+	if flag.Lookup("b") == nil {
 		_ = flag.Value(bu)
 		flag.Var(bu, "b", "Net address with route prefix (example: http://localhost:8080/prefix)")
 		needParse = true
 	}
-	if flag.Lookup("f") == nil && c.FileStoragePath == "" {
+	if flag.Lookup("f") == nil {
 		_ = flag.Value(fsp)
 		flag.Var(fsp, "f", "File storage path (example: ./storage")
 		needParse = true
@@ -37,13 +37,13 @@ func (c *Cfg) withFlags() *Cfg {
 	if needParse {
 		flag.Parse()
 	}
-	if *sa != "" {
+	if *sa != "" && c.ServerAddress == "" {
 		c.ServerAddress = *sa
 	}
-	if *bu != "" {
+	if *bu != "" && c.BaseURL == "" {
 		c.BaseURL = *bu
 	}
-	if *fsp != "" {
+	if *fsp != "" && c.FileStoragePath == "" {
 		c.FileStoragePath = *fsp
 	}
 	return c
