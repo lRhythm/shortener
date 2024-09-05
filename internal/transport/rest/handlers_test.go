@@ -1,8 +1,10 @@
-package httptransport
+package rest
 
 import (
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/lRhythm/shortener/internal/config"
+	"github.com/lRhythm/shortener/internal/logs"
 	"github.com/lRhythm/shortener/internal/service"
 	"github.com/lRhythm/shortener/internal/storage"
 	"github.com/stretchr/testify/assert"
@@ -16,12 +18,71 @@ import (
 	"testing"
 )
 
-func TestCreateHandler(t *testing.T) {
+func TestApiCreateHandler(t *testing.T) {
 	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
 	s, _ := New(
+		logs.New(),
 		cfg,
 		service.New(
-			service.WithStorage(storage.NewInMemory()),
+			service.WithStorage(db),
+		),
+	)
+	f := fiber.New()
+	f.Post("/api/shorten", s.apiCreateHandler)
+	tests := []struct {
+		name        string
+		route       string
+		req         createRequest
+		status      int
+		contentType string
+	}{
+		{
+			name:        "1. 201 - success",
+			route:       "/api/shorten",
+			req:         createRequest{URL: "https://ya.ru"},
+			status:      fiber.StatusCreated,
+			contentType: "application/json",
+		},
+		{
+			name:   "2. 400 - error: bad url in body.url",
+			route:  "/api/shorten",
+			req:    createRequest{URL: "WRONG"},
+			status: fiber.StatusBadRequest,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			j, err := json.Marshal(test.req)
+			require.NoError(t, err)
+			req := httptest.NewRequest(http.MethodPost, test.route, strings.NewReader(string(j)))
+			req.Header.Set("Content-Type", "application/json")
+			resp, _ := f.Test(req, -1)
+			assert.Equal(t, test.status, resp.StatusCode)
+			b, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			err = resp.Body.Close()
+			require.NoError(t, err)
+			r := string(b)
+			if test.status == fiber.StatusCreated {
+				assert.Equal(t, len(r) > 0, true)
+				assert.Equal(t, resp.Header.Get("Content-Type"), test.contentType)
+			}
+			if test.status == fiber.StatusBadRequest {
+				assert.Equal(t, len(r) == 0, true)
+			}
+		})
+	}
+}
+
+func TestCreateHandler(t *testing.T) {
+	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
+	s, _ := New(
+		logs.New(),
+		cfg,
+		service.New(
+			service.WithStorage(db),
 		),
 	)
 	f := fiber.New()
@@ -67,10 +128,12 @@ func TestCreateHandler(t *testing.T) {
 
 func TestGetHandler(t *testing.T) {
 	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
 	logic := service.New(
-		service.WithStorage(storage.NewInMemory()),
+		service.WithStorage(db),
 	)
 	s, _ := New(
+		logs.New(),
 		cfg,
 		logic,
 	)

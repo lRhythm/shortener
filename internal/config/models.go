@@ -6,10 +6,12 @@ import (
 
 type serverAddress string
 type baseURL string
+type fileStoragePath string
 
 type Cfg struct {
-	ServerAddress serverAddress `env:"SERVER_ADDRESS"`
-	BaseURL       baseURL       `env:"BASE_URL"`
+	ServerAddress   serverAddress   `env:"SERVER_ADDRESS"`
+	BaseURL         baseURL         `env:"BASE_URL"`
+	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH"`
 }
 
 func (c *Cfg) Host() string {
@@ -17,9 +19,13 @@ func (c *Cfg) Host() string {
 }
 
 func (c *Cfg) Path() string {
-	u, err := url.Parse(string(c.BaseURL))
+	u, err := url.ParseRequestURI(string(c.BaseURL))
 	if err != nil {
 		return ""
 	}
 	return u.Path
+}
+
+func (c *Cfg) File() string {
+	return string(c.FileStoragePath)
 }

@@ -10,15 +10,15 @@ func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
 	if err != nil {
 		return "", errors.New("invalid URL")
 	}
-	keyURL := c.genKey()
-	err = c.storage.Put(keyURL, originalURL)
+	shortURL := c.genKey()
+	err = c.storage.Put(shortURL, originalURL)
 	if err != nil {
 		return "", err
 	}
-	s, _ := url.JoinPath(address, keyURL)
+	s, _ := url.JoinPath(address, shortURL)
 	return s, nil
 }
 
-func (c *Client) GetShortURL(keyURL string) (string, error) {
-	return c.storage.Get(keyURL)
+func (c *Client) GetShortURL(shortURL string) (string, error) {
+	return c.storage.Get(shortURL)
 }
