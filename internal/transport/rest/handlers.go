@@ -9,10 +9,18 @@ import (
 
 func (s *Server) setupHandlers() *Server {
 	router := s.app.Group(s.cfg.Path())
+	router.Get("/ping", s.pingHandler)
 	router.Post("/api/shorten", s.apiCreateHandler)
 	router.Post("/", s.createHandler)
 	router.Get(fmt.Sprintf("/:%s", pathParamID), s.getHandler)
 	return s
+}
+
+func (s *Server) pingHandler(c *fiber.Ctx) error {
+	if err := s.service.DBPing(); err != nil {
+		return internalServerErrorResponse(c)
+	}
+	return c.Status(fiber.StatusOK).Send(nil)
 }
 
 func (s *Server) apiCreateHandler(c *fiber.Ctx) error {

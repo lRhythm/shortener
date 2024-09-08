@@ -6,6 +6,11 @@ type repositoryInterface interface {
 	Close() (err error)
 }
 
+type dbInterface interface {
+	Ping() (err error)
+}
+
 type Client struct {
 	storage repositoryInterface
+	db      dbInterface
 }

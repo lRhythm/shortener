@@ -6,6 +6,7 @@ import (
 )
 
 type serviceInterface interface {
+	DBPing() (err error)
 	CreateShortURL(originalURL, address string) (shortURL string, err error)
 	GetShortURL(key string) (originalURL string, err error)
 }

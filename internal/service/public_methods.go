@@ -5,6 +5,10 @@ import (
 	"net/url"
 )
 
+func (c *Client) DBPing() error {
+	return c.db.Ping()
+}
+
 func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
 	_, err := url.ParseRequestURI(originalURL)
 	if err != nil {

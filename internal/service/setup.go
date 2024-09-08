@@ -13,3 +13,9 @@ func WithStorage(i repositoryInterface) func(*Client) {
 		c.storage = i
 	}
 }
+
+func WithDB(i dbInterface) func(*Client) {
+	return func(c *Client) {
+		c.db = i
+	}
+}

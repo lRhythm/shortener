@@ -38,3 +38,12 @@ func (t *fileStoragePath) Set(v string) error {
 	*t = fileStoragePath(v)
 	return nil
 }
+
+func (t *databaseDSN) String() string {
+	return string(*t)
+}
+
+func (t *databaseDSN) Set(v string) error {
+	*t = databaseDSN(v)
+	return nil
+}

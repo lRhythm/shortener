@@ -19,19 +19,28 @@ func Start() {
 		logger.Fatal(err)
 	}
 
-	db, err := storage.NewMemory(cfg.File())
+	memory, err := storage.NewMemory(cfg.File())
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer func(stor *storage.Memory) {
-		_ = stor.Close()
+	defer func(s *storage.Memory) {
+		_ = s.Close()
+	}(memory)
+
+	db, err := storage.NewDB(cfg.DSN())
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer func(s *storage.DB) {
+		_ = s.Close()
 	}(db)
 
 	s, err := rest.New(
 		logger,
 		cfg,
 		service.New(
-			service.WithStorage(db),
+			service.WithStorage(memory),
+			service.WithDB(db),
 		),
 	)
 	if err != nil {

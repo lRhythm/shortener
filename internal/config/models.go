@@ -7,11 +7,13 @@ import (
 type serverAddress string
 type baseURL string
 type fileStoragePath string
+type databaseDSN string
 
 type Cfg struct {
 	ServerAddress   serverAddress   `env:"SERVER_ADDRESS"`
 	BaseURL         baseURL         `env:"BASE_URL"`
 	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH"`
+	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN"`
 }
 
 func (c *Cfg) Host() string {
@@ -28,4 +30,8 @@ func (c *Cfg) Path() string {
 
 func (c *Cfg) File() string {
 	return string(c.FileStoragePath)
+}
+
+func (c *Cfg) DSN() string {
+	return string(c.DatabaseDSN)
 }
