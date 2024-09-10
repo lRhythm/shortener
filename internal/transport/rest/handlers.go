@@ -17,7 +17,7 @@ func (s *Server) setupHandlers() *Server {
 }
 
 func (s *Server) pingHandler(c *fiber.Ctx) error {
-	if err := s.service.DBPing(); err != nil {
+	if err := s.service.Ping(); err != nil {
 		return internalServerErrorResponse(c)
 	}
 	return c.Status(fiber.StatusOK).Send(nil)

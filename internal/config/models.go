@@ -32,6 +32,7 @@ func (c *Cfg) File() string {
 	return string(c.FileStoragePath)
 }
 
-func (c *Cfg) DSN() string {
-	return string(c.DatabaseDSN)
+func (c *Cfg) DSN() (string, bool) {
+	dsn := string(c.DatabaseDSN)
+	return dsn, len(dsn) > 0
 }

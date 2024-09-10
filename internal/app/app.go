@@ -19,28 +19,27 @@ func Start() {
 		logger.Fatal(err)
 	}
 
-	memory, err := storage.NewMemory(cfg.File())
-	if err != nil {
-		logger.Fatal(err)
+	var store service.RepositoryInterface
+	dns, ok := cfg.DSN()
+	if ok {
+		store, err = storage.NewDB(dns)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		defer store.Close()
+	} else {
+		store, err = storage.NewMemory(cfg.File())
+		if err != nil {
+			logger.Fatal(err)
+		}
+		defer store.Close()
 	}
-	defer func(s *storage.Memory) {
-		_ = s.Close()
-	}(memory)
-
-	db, err := storage.NewDB(cfg.DSN())
-	if err != nil {
-		logger.Fatal(err)
-	}
-	defer func(s *storage.DB) {
-		_ = s.Close()
-	}(db)
 
 	s, err := rest.New(
 		logger,
 		cfg,
 		service.New(
-			service.WithStorage(memory),
-			service.WithDB(db),
+			service.WithStorage(store),
 		),
 	)
 	if err != nil {

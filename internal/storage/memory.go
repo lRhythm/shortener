@@ -9,6 +9,10 @@ type Memory struct {
 	file    *file
 }
 
+func (m *Memory) Ping() error {
+	return nil
+}
+
 func (m *Memory) Put(shortURL, originalURL string) error {
 	*m.storage = append(*m.storage, newRow(shortURL, originalURL))
 	return nil

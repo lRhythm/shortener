@@ -1,16 +1,12 @@
 package service
 
-type repositoryInterface interface {
+type RepositoryInterface interface {
+	Ping() (err error)
 	Put(key, value string) (err error)
 	Get(key string) (value string, err error)
 	Close() (err error)
 }
 
-type dbInterface interface {
-	Ping() (err error)
-}
-
 type Client struct {
-	storage repositoryInterface
-	db      dbInterface
+	storage RepositoryInterface
 }

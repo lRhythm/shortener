@@ -8,14 +8,8 @@ func New(opts ...func(*Client)) *Client {
 	return c
 }
 
-func WithStorage(i repositoryInterface) func(*Client) {
+func WithStorage(i RepositoryInterface) func(*Client) {
 	return func(c *Client) {
 		c.storage = i
-	}
-}
-
-func WithDB(i dbInterface) func(*Client) {
-	return func(c *Client) {
-		c.db = i
 	}
 }

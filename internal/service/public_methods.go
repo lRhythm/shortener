@@ -5,8 +5,8 @@ import (
 	"net/url"
 )
 
-func (c *Client) DBPing() error {
-	return c.db.Ping()
+func (c *Client) Ping() error {
+	return c.storage.Ping()
 }
 
 func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
