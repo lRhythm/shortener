@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/jmoiron/sqlx"
+	"github.com/lRhythm/shortener/internal/models"
 	_ "github.com/lib/pq"
 )
 
@@ -17,6 +18,27 @@ func (db *DB) Put(shortURL, originalURL string) error {
 	query := `insert into urls (short_url, original_url) values ($1, $2)`
 	_, err := db.db.Exec(query, shortURL, originalURL)
 	return err
+}
+
+func (db *DB) Batch(rows models.Rows) error {
+	tx, err := db.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	query := `insert into urls (short_url, original_url, correlation_id) values ($1, $2, $3)`
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	for _, row := range rows {
+		_, err = stmt.Exec(row.ShortURL, row.OriginalURL, row.CorrelationID)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 func (db *DB) Get(shortURL string) (string, error) {

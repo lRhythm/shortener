@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 type Memory struct {
@@ -14,7 +15,14 @@ func (m *Memory) Ping() error {
 }
 
 func (m *Memory) Put(shortURL, originalURL string) error {
-	*m.storage = append(*m.storage, newRow(shortURL, originalURL))
+	*m.storage = append(*m.storage, newRow(shortURL, originalURL, ""))
+	return nil
+}
+
+func (m *Memory) Batch(rows models.Rows) error {
+	for _, row := range rows {
+		*m.storage = append(*m.storage, newRow(row.ShortURL, row.OriginalURL, row.CorrelationID))
+	}
 	return nil
 }
 

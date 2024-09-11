@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"net/url"
 )
 
 func (s *Server) setupHandlers() *Server {
 	router := s.app.Group(s.cfg.Path())
 	router.Get("/ping", s.pingHandler)
 	router.Post("/api/shorten", s.apiCreateHandler)
+	router.Post("/api/shorten/batch", s.apiCreateBatchHandler)
 	router.Post("/", s.createHandler)
 	router.Get(fmt.Sprintf("/:%s", pathParamID), s.getHandler)
 	return s
@@ -32,11 +32,11 @@ func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return badRequestResponse(c)
 	}
-	a, err := url.JoinPath(c.BaseURL(), s.cfg.Path())
+	a, err := s.address(c)
 	if err != nil {
 		return badRequestResponse(c)
 	}
-	shortURL, err := s.service.CreateShortURL(req.URL, a)
+	shortURL, err := s.service.CreateShortURL(req.OriginalURL, a)
 	if err != nil {
 		return badRequestResponse(c)
 	}
@@ -44,8 +44,29 @@ func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(createResponse{Result: shortURL})
 }
 
+func (s *Server) apiCreateBatchHandler(c *fiber.Ctx) error {
+	if c.Get(fiber.HeaderContentType) != fiber.MIMEApplicationJSON {
+		return badRequestResponse(c)
+	}
+	var req createItemsRequest
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		return badRequestResponse(c)
+	}
+	a, err := s.address(c)
+	if err != nil {
+		return badRequestResponse(c)
+	}
+	rows, err := s.service.CreateBatch(req.ToRows(), a)
+	if err != nil {
+		return badRequestResponse(c)
+	}
+	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+	return c.Status(fiber.StatusCreated).JSON(newCreateItemsResponse(rows))
+}
+
 func (s *Server) createHandler(c *fiber.Ctx) error {
-	a, err := url.JoinPath(c.BaseURL(), s.cfg.Path())
+	a, err := s.address(c)
 	if err != nil {
 		return badRequestResponse(c)
 	}

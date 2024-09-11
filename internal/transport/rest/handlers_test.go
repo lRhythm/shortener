@@ -40,14 +40,14 @@ func TestApiCreateHandler(t *testing.T) {
 		{
 			name:        "1. 201 - success",
 			route:       "/api/shorten",
-			req:         createRequest{URL: "https://ya.ru"},
+			req:         createRequest{OriginalURL: "https://ya.ru"},
 			status:      fiber.StatusCreated,
 			contentType: "application/json",
 		},
 		{
 			name:   "2. 400 - error: bad url in body.url",
 			route:  "/api/shorten",
-			req:    createRequest{URL: "WRONG"},
+			req:    createRequest{OriginalURL: "WRONG"},
 			status: fiber.StatusBadRequest,
 		},
 	}
@@ -70,6 +70,108 @@ func TestApiCreateHandler(t *testing.T) {
 			}
 			if test.status == fiber.StatusBadRequest {
 				assert.Equal(t, len(r) == 0, true)
+			}
+		})
+	}
+}
+
+func TestApiCreateBatchHandler(t *testing.T) {
+	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
+	s, _ := New(
+		logs.New(),
+		cfg,
+		service.New(
+			service.WithStorage(db),
+		),
+	)
+	f := fiber.New()
+	f.Post("/api/shorten/batch", s.apiCreateBatchHandler)
+	tests := []struct {
+		name        string
+		route       string
+		req         createItemsRequest
+		respCorrID  []string
+		status      int
+		contentType string
+	}{
+		{
+			name:  "1. 201 - success",
+			route: "/api/shorten/batch",
+			req: createItemsRequest{
+				createItemRequest{
+					OriginalURL:   "https://ya.ru",
+					CorrelationID: "id1",
+				},
+				createItemRequest{
+					OriginalURL:   "https://yandex.ru",
+					CorrelationID: "",
+				},
+				createItemRequest{
+					OriginalURL:   "",
+					CorrelationID: "id3",
+				},
+				createItemRequest{
+					OriginalURL:   "",
+					CorrelationID: "",
+				},
+				createItemRequest{
+					OriginalURL:   "https://yadi.sk",
+					CorrelationID: "id5",
+				},
+			},
+			respCorrID:  []string{"id1", "id5"},
+			status:      fiber.StatusCreated,
+			contentType: "application/json",
+		},
+		{
+			name:  "2. 400 - error: bad url in body.*.original_url",
+			route: "/api/shorten/batch",
+			req: createItemsRequest{
+				createItemRequest{
+					OriginalURL:   "WRONG",
+					CorrelationID: "id1",
+				},
+			},
+			status: fiber.StatusBadRequest,
+		},
+		{
+			name:  "3. 400 - error: empty body.*",
+			route: "/api/shorten/batch",
+			req: createItemsRequest{
+				createItemRequest{
+					OriginalURL:   "",
+					CorrelationID: "",
+				},
+			},
+			status: fiber.StatusBadRequest,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			j, err := json.Marshal(test.req)
+			require.NoError(t, err)
+			req := httptest.NewRequest(http.MethodPost, test.route, strings.NewReader(string(j)))
+			req.Header.Set("Content-Type", "application/json")
+			resp, _ := f.Test(req, -1)
+			assert.Equal(t, test.status, resp.StatusCode)
+			b, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			err = resp.Body.Close()
+			require.NoError(t, err)
+			r := string(b)
+			if test.status == fiber.StatusCreated {
+				assert.True(t, len(r) > 0)
+				assert.Equal(t, resp.Header.Get("Content-Type"), test.contentType)
+				var rb createItemsResponse
+				err = json.Unmarshal(b, &rb)
+				require.NoError(t, err)
+				for _, id := range rb {
+					assert.Contains(t, test.respCorrID, id.CorrelationID)
+				}
+			}
+			if test.status == fiber.StatusBadRequest {
+				assert.True(t, len(r) == 0)
 			}
 		})
 	}
@@ -117,10 +219,10 @@ func TestCreateHandler(t *testing.T) {
 			require.NoError(t, err)
 			r := string(b)
 			if test.status == fiber.StatusCreated {
-				assert.Equal(t, len(r) > 0, true)
+				assert.True(t, len(r) > 0)
 			}
 			if test.status == fiber.StatusBadRequest {
-				assert.Equal(t, len(r) == 0, true)
+				assert.True(t, len(r) == 0)
 			}
 		})
 	}

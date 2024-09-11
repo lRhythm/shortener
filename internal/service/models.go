@@ -1,9 +1,12 @@
 package service
 
+import "github.com/lRhythm/shortener/internal/models"
+
 type RepositoryInterface interface {
 	Ping() (err error)
-	Put(key, value string) (err error)
-	Get(key string) (value string, err error)
+	Put(shortURL, originalURL string) (err error)
+	Batch(rows models.Rows) (err error)
+	Get(shortURL string) (originalURL string, err error)
 	Close() (err error)
 }
 
