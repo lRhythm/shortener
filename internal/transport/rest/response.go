@@ -21,6 +21,12 @@ type createResponse struct {
 	Result string `json:"result"`
 }
 
+func newCreateResponse(shortURL string) *createResponse {
+	return &createResponse{
+		Result: shortURL,
+	}
+}
+
 type createItemsResponse []createItemResponse
 
 type createItemResponse struct {

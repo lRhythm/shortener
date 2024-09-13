@@ -26,13 +26,22 @@ func (m *Memory) Batch(rows models.Rows) error {
 	return nil
 }
 
-func (m *Memory) Get(shortURL string) (string, error) {
+func (m *Memory) GetOriginalURL(shortURL string) (string, error) {
 	for _, row := range *m.storage {
 		if shortURL == row.ShortURL {
 			return row.OriginalURL, nil
 		}
 	}
 	return "", errors.New("short url not found")
+}
+
+func (m *Memory) GetShortURL(originalURL string) (string, error) {
+	for _, row := range *m.storage {
+		if originalURL == row.OriginalURL {
+			return row.ShortURL, nil
+		}
+	}
+	return "", errors.New("original url not found")
 }
 
 func (m *Memory) Close() error {

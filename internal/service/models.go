@@ -6,7 +6,8 @@ type RepositoryInterface interface {
 	Ping() (err error)
 	Put(shortURL, originalURL string) (err error)
 	Batch(rows models.Rows) (err error)
-	Get(shortURL string) (originalURL string, err error)
+	GetOriginalURL(shortURL string) (originalURL string, err error)
+	GetShortURL(originalURL string) (shortURL string, err error)
 	Close() (err error)
 }
 

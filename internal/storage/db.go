@@ -1,8 +1,11 @@
 package storage
 
 import (
+	"errors"
+	"github.com/jackc/pgerrcode"
 	"github.com/jmoiron/sqlx"
 	"github.com/lRhythm/shortener/internal/models"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -17,6 +20,12 @@ func (db *DB) Ping() error {
 func (db *DB) Put(shortURL, originalURL string) error {
 	query := `insert into urls (short_url, original_url) values ($1, $2)`
 	_, err := db.db.Exec(query, shortURL, originalURL)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+			err = models.ErrConflict
+		}
+	}
 	return err
 }
 
@@ -41,11 +50,18 @@ func (db *DB) Batch(rows models.Rows) error {
 	return tx.Commit()
 }
 
-func (db *DB) Get(shortURL string) (string, error) {
+func (db *DB) GetOriginalURL(shortURL string) (string, error) {
 	var originalURL string
 	query := `select original_url from urls where short_url = $1`
 	err := db.db.Get(&originalURL, query, shortURL)
 	return originalURL, err
+}
+
+func (db *DB) GetShortURL(originalURL string) (string, error) {
+	var shortURL string
+	query := `select short_url from urls where original_url = $1`
+	err := db.db.Get(&shortURL, query, originalURL)
+	return shortURL, err
 }
 
 func (db *DB) Close() error {

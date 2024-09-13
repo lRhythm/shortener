@@ -10,7 +10,7 @@ type serviceInterface interface {
 	Ping() (err error)
 	CreateShortURL(originalURL, address string) (shortURL string, err error)
 	CreateBatch(rows models.Rows, address string) (models.Rows, error)
-	GetShortURL(key string) (originalURL string, err error)
+	GetOriginalURL(key string) (originalURL string, err error)
 }
 
 type cfgInterface interface {

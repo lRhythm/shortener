@@ -9,4 +9,4 @@ create table if not exists urls
     created_at     timestamp(0) not null default now(),
     updated_at     timestamp(0) not null default now(),
     primary key (id)
-)
+);

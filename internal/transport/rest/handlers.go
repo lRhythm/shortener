@@ -2,8 +2,10 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 func (s *Server) setupHandlers() *Server {
@@ -37,11 +39,15 @@ func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
 		return badRequestResponse(c)
 	}
 	shortURL, err := s.service.CreateShortURL(req.OriginalURL, a)
+
 	if err != nil {
+		if errors.Is(err, models.ErrConflict) {
+			return c.Status(fiber.StatusConflict).JSON(newCreateResponse(shortURL))
+		}
 		return badRequestResponse(c)
 	}
 	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-	return c.Status(fiber.StatusCreated).JSON(createResponse{Result: shortURL})
+	return c.Status(fiber.StatusCreated).JSON(newCreateResponse(shortURL))
 }
 
 func (s *Server) apiCreateBatchHandler(c *fiber.Ctx) error {
@@ -72,13 +78,16 @@ func (s *Server) createHandler(c *fiber.Ctx) error {
 	}
 	shortURL, err := s.service.CreateShortURL(string(c.Body()), a)
 	if err != nil {
+		if errors.Is(err, models.ErrConflict) {
+			return c.Status(fiber.StatusConflict).Send([]byte(shortURL))
+		}
 		return badRequestResponse(c)
 	}
 	return c.Status(fiber.StatusCreated).Send([]byte(shortURL))
 }
 
 func (s *Server) getHandler(c *fiber.Ctx) error {
-	originalURL, err := s.service.GetShortURL(c.Params(pathParamID))
+	originalURL, err := s.service.GetOriginalURL(c.Params(pathParamID))
 	if err != nil {
 		return badRequestResponse(c)
 	}

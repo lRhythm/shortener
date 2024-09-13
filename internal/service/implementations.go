@@ -11,14 +11,23 @@ func (c *Client) Ping() error {
 }
 
 func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
-	_, err := url.ParseRequestURI(originalURL)
+	var err, e error
+	_, err = url.ParseRequestURI(originalURL)
 	if err != nil {
 		return "", errors.New("invalid URL")
 	}
 	shortURL := c.genKey()
 	err = c.storage.Put(shortURL, originalURL)
 	if err != nil {
-		return "", err
+		if !errors.Is(err, models.ErrConflict) {
+			return "", err
+		}
+		shortURL, e = c.storage.GetShortURL(originalURL)
+		if e != nil {
+			return "", e
+		}
+		s, _ := url.JoinPath(address, shortURL)
+		return s, err
 	}
 	s, _ := url.JoinPath(address, shortURL)
 	return s, nil
@@ -46,6 +55,6 @@ func (c *Client) CreateBatch(rows models.Rows, address string) (models.Rows, err
 	return rows, nil
 }
 
-func (c *Client) GetShortURL(shortURL string) (string, error) {
-	return c.storage.Get(shortURL)
+func (c *Client) GetOriginalURL(shortURL string) (string, error) {
+	return c.storage.GetOriginalURL(shortURL)
 }

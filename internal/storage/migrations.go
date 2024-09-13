@@ -15,6 +15,7 @@ var migrations = map[string][]string{
 		//    ↓ - `storage/`.
 		// ↓    - `internal/`.
 		"../../db/migrations/00001_urls_table.up.sql",
+		"../../db/migrations/00002_urls_table_original_url_unique_index.up.sql",
 	},
 	// If needed: `down: {"..."}`.
 }
