@@ -52,7 +52,7 @@ func (c *Cfg) withFlags() *Cfg {
 	if *fsp != "" && c.FileStoragePath == "" {
 		c.FileStoragePath = *fsp
 	}
-	if *dd != "" && c.DatabaseDSN == "" {
+	if *dd != "" {
 		c.DatabaseDSN = *dd
 	}
 	return c
