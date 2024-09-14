@@ -19,11 +19,7 @@ func Start() {
 		logger.Fatal(err)
 	}
 
-	logger.Infof("config: %+v", cfg)
-	logger.Infof("cfg.Host(): %s", cfg.Host())
-	logger.Infof("cfg.Path(): %s", cfg.Path())
-	logger.Infof("cfg.File(): %s", cfg.File())
-	logger.Infof("cfg.DSN(): %s", cfg.DSN())
+	logger.Infof("cfg: %+v; cfg.Host(): %s; cfg.Path(): %s; cfg.File(): %s; cfg.DSN(): %s", cfg, cfg.Host(), cfg.Path(), cfg.File(), cfg.DSN())
 
 	memory, err := storage.NewMemory(cfg.File())
 	if err != nil {

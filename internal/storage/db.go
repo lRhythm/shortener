@@ -22,10 +22,10 @@ func NewDB(DSN string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = d.Ping()
-	if err != nil {
-		return nil, err
-	}
+	//err = d.Ping()
+	//if err != nil {
+	//	return nil, err
+	//}
 	return &DB{
 		db: d,
 	}, nil
