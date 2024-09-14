@@ -68,8 +68,8 @@ func (c *Cfg) withDefault() *Cfg {
 	if c.FileStoragePath == "" {
 		c.FileStoragePath = "./storage"
 	}
-	if c.DatabaseDSN == "" {
-		c.DatabaseDSN = "host=localhost port=5432 user=user password=secret dbname=postgres sslmode=disable"
-	}
+	//if c.DatabaseDSN == "" {
+	//	c.DatabaseDSN = "host=localhost port=5432 user=user password=secret dbname=postgres sslmode=disable"
+	//}
 	return c
 }
