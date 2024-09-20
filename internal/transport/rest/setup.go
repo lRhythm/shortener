@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -20,7 +21,7 @@ func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Serv
 		return nil, errors.New("service must not be nil")
 	}
 	s := new(Server)
-	s.app = newFiberApp(logs)
+	s.app = newFiberApp(logs, cfg.CookieKey())
 	s.logs = logs
 	s.cfg = cfg
 	s.service = service
@@ -35,7 +36,7 @@ func (s *Server) Shutdown() error {
 	return s.app.Shutdown()
 }
 
-func newFiberApp(logs *logrus.Logger) *fiber.App {
+func newFiberApp(logs *logrus.Logger, cookieKey string) *fiber.App {
 	app := fiber.New(
 		fiber.Config{
 			DisableStartupMessage: true,
@@ -54,6 +55,13 @@ func newFiberApp(logs *logrus.Logger) *fiber.App {
 		compress.New(
 			compress.Config{
 				Level: compress.LevelBestSpeed,
+			},
+		),
+	)
+	app.Use(
+		encryptcookie.New(
+			encryptcookie.Config{
+				Key: cookieKey,
 			},
 		),
 	)

@@ -7,14 +7,16 @@ type Row struct {
 	ShortURL      string `json:"short_url"`
 	OriginalURL   string `json:"original_url"`
 	CorrelationID string `json:"correlation_id"`
+	UserID        string `json:"user_id"`
 }
 
-func newRow(shortURL, originalURL, correlationID string) Row {
+func newRow(shortURL, originalURL, correlationID, userID string) Row {
 	return Row{
 		UUID:          newUUID(),
 		CorrelationID: correlationID,
 		ShortURL:      shortURL,
 		OriginalURL:   originalURL,
+		UserID:        userID,
 	}
 }
 

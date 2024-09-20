@@ -7,15 +7,31 @@ import (
 )
 
 type serviceInterface interface {
+	commonInterface
+	URLInterface
+	userInterface
+}
+
+type commonInterface interface {
 	Ping() (err error)
-	CreateShortURL(originalURL, address string) (shortURL string, err error)
-	CreateBatch(rows models.Rows, address string) (models.Rows, error)
+}
+
+type URLInterface interface {
+	CreateShortURL(originalURL, address, userID string) (shortURL string, err error)
+	CreateBatch(rows models.Rows, address, userID string) (models.Rows, error)
 	GetOriginalURL(key string) (originalURL string, err error)
+	GetUserURLs(address, userID string) (rows models.Rows, err error)
+}
+
+type userInterface interface {
+	GenerateUserID() string
+	ValidateUserID(userID string) error
 }
 
 type cfgInterface interface {
 	Host() string
 	Path() string
+	CookieKey() string
 }
 
 type Server struct {

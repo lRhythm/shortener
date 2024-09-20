@@ -14,14 +14,14 @@ func (m *Memory) Ping() error {
 	return nil
 }
 
-func (m *Memory) Put(shortURL, originalURL string) error {
-	*m.storage = append(*m.storage, newRow(shortURL, originalURL, ""))
+func (m *Memory) Put(shortURL, originalURL, userID string) error {
+	*m.storage = append(*m.storage, newRow(shortURL, originalURL, "", userID))
 	return nil
 }
 
-func (m *Memory) Batch(rows models.Rows) error {
+func (m *Memory) Batch(rows models.Rows, userID string) error {
 	for _, row := range rows {
-		*m.storage = append(*m.storage, newRow(row.ShortURL, row.OriginalURL, row.CorrelationID))
+		*m.storage = append(*m.storage, newRow(row.ShortURL, row.OriginalURL, row.CorrelationID, userID))
 	}
 	return nil
 }
@@ -42,6 +42,19 @@ func (m *Memory) GetShortURL(originalURL string) (string, error) {
 		}
 	}
 	return "", errors.New("original url not found")
+}
+
+func (m *Memory) GetUserURLs(userID string) (models.Rows, error) {
+	rows := make(models.Rows, 0)
+	for _, row := range *m.storage {
+		if userID == row.UserID {
+			rows = append(rows, models.Row{
+				ShortURL:    row.ShortURL,
+				OriginalURL: row.OriginalURL,
+			})
+		}
+	}
+	return rows, nil
 }
 
 func (m *Memory) Close() error {
