@@ -321,13 +321,13 @@ func TestApiUserUrlsGetHandler(t *testing.T) {
 	tests := []struct {
 		name   string
 		status int
-		userId string
+		userID string
 		resp   models.Rows
 	}{
 		{
 			name:   "1. 200 - success",
 			status: fiber.StatusOK,
-			userId: uid,
+			userID: uid,
 			resp: models.Rows{models.Row{
 				ShortURL:    su,
 				OriginalURL: ou,
@@ -336,7 +336,7 @@ func TestApiUserUrlsGetHandler(t *testing.T) {
 		{
 			name:   "1. 204 - no content",
 			status: fiber.StatusNoContent,
-			userId: uuid.NewString(),
+			userID: uuid.NewString(),
 		},
 		{
 			name:   "1. 401 - unauthorized",
@@ -348,7 +348,7 @@ func TestApiUserUrlsGetHandler(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
 			req.AddCookie(&http.Cookie{
 				Name:  cookieUserID,
-				Value: test.userId,
+				Value: test.userID,
 			})
 			resp, _ := f.Test(req, -1)
 			assert.Equal(t, test.status, resp.StatusCode)
