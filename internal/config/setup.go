@@ -18,6 +18,7 @@ func (c *Cfg) withFlags() *Cfg {
 	sa := new(serverAddress)
 	bu := new(baseURL)
 	fsp := new(fileStoragePath)
+	dd := new(databaseDSN)
 	var needParse bool
 	if flag.Lookup("a") == nil {
 		_ = flag.Value(sa)
@@ -34,6 +35,11 @@ func (c *Cfg) withFlags() *Cfg {
 		flag.Var(fsp, "f", "File storage path (example: ./storage")
 		needParse = true
 	}
+	if flag.Lookup("d") == nil {
+		_ = flag.Value(dd)
+		flag.Var(dd, "d", "PostgreSQL DSN")
+		needParse = true
+	}
 	if needParse {
 		flag.Parse()
 	}
@@ -45,6 +51,9 @@ func (c *Cfg) withFlags() *Cfg {
 	}
 	if *fsp != "" && c.FileStoragePath == "" {
 		c.FileStoragePath = *fsp
+	}
+	if *dd != "" && c.DatabaseDSN == "" {
+		c.DatabaseDSN = *dd
 	}
 	return c
 }

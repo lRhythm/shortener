@@ -2,17 +2,27 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"net/url"
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 func (s *Server) setupHandlers() *Server {
 	router := s.app.Group(s.cfg.Path())
+	router.Get("/ping", s.pingHandler)
 	router.Post("/api/shorten", s.apiCreateHandler)
+	router.Post("/api/shorten/batch", s.apiCreateBatchHandler)
 	router.Post("/", s.createHandler)
 	router.Get(fmt.Sprintf("/:%s", pathParamID), s.getHandler)
 	return s
+}
+
+func (s *Server) pingHandler(c *fiber.Ctx) error {
+	if err := s.service.Ping(); err != nil {
+		return internalServerErrorResponse(c)
+	}
+	return c.Status(fiber.StatusOK).Send(nil)
 }
 
 func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
@@ -24,32 +34,60 @@ func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return badRequestResponse(c)
 	}
-	a, err := url.JoinPath(c.BaseURL(), s.cfg.Path())
+	a, err := s.address(c)
 	if err != nil {
 		return badRequestResponse(c)
 	}
-	shortURL, err := s.service.CreateShortURL(req.URL, a)
+	shortURL, err := s.service.CreateShortURL(req.OriginalURL, a)
+
+	if err != nil {
+		if errors.Is(err, models.ErrConflict) {
+			return c.Status(fiber.StatusConflict).JSON(newCreateResponse(shortURL))
+		}
+		return badRequestResponse(c)
+	}
+	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+	return c.Status(fiber.StatusCreated).JSON(newCreateResponse(shortURL))
+}
+
+func (s *Server) apiCreateBatchHandler(c *fiber.Ctx) error {
+	if c.Get(fiber.HeaderContentType) != fiber.MIMEApplicationJSON {
+		return badRequestResponse(c)
+	}
+	var req createItemsRequest
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		return badRequestResponse(c)
+	}
+	a, err := s.address(c)
+	if err != nil {
+		return badRequestResponse(c)
+	}
+	rows, err := s.service.CreateBatch(req.ToRows(), a)
 	if err != nil {
 		return badRequestResponse(c)
 	}
 	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-	return c.Status(fiber.StatusCreated).JSON(createResponse{Result: shortURL})
+	return c.Status(fiber.StatusCreated).JSON(newCreateItemsResponse(rows))
 }
 
 func (s *Server) createHandler(c *fiber.Ctx) error {
-	a, err := url.JoinPath(c.BaseURL(), s.cfg.Path())
+	a, err := s.address(c)
 	if err != nil {
 		return badRequestResponse(c)
 	}
 	shortURL, err := s.service.CreateShortURL(string(c.Body()), a)
 	if err != nil {
+		if errors.Is(err, models.ErrConflict) {
+			return c.Status(fiber.StatusConflict).Send([]byte(shortURL))
+		}
 		return badRequestResponse(c)
 	}
 	return c.Status(fiber.StatusCreated).Send([]byte(shortURL))
 }
 
 func (s *Server) getHandler(c *fiber.Ctx) error {
-	originalURL, err := s.service.GetShortURL(c.Params(pathParamID))
+	originalURL, err := s.service.GetOriginalURL(c.Params(pathParamID))
 	if err != nil {
 		return badRequestResponse(c)
 	}

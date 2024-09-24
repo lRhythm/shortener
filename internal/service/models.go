@@ -1,11 +1,16 @@
 package service
 
-type repositoryInterface interface {
-	Put(key, value string) (err error)
-	Get(key string) (value string, err error)
+import "github.com/lRhythm/shortener/internal/models"
+
+type RepositoryInterface interface {
+	Ping() (err error)
+	Put(shortURL, originalURL string) (err error)
+	Batch(rows models.Rows) (err error)
+	GetOriginalURL(shortURL string) (originalURL string, err error)
+	GetShortURL(originalURL string) (shortURL string, err error)
 	Close() (err error)
 }
 
 type Client struct {
-	storage repositoryInterface
+	storage RepositoryInterface
 }
