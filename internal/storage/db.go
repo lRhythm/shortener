@@ -49,11 +49,11 @@ func (db *DB) Batch(rows models.Rows, userID string) error {
 	return tx.Commit()
 }
 
-func (db *DB) GetOriginalURL(shortURL string) (string, error) {
-	var originalURL string
-	query := `select original_url from urls where short_url = $1`
-	err := db.db.Get(&originalURL, query, shortURL)
-	return originalURL, err
+func (db *DB) GetOriginalURL(shortURL string) (string, bool, error) {
+	var row models.Row
+	query := `select original_url, is_deleted from urls where short_url = $1`
+	err := db.db.Get(&row, query, shortURL)
+	return row.OriginalURL, row.IsDeleted, err
 }
 
 func (db *DB) GetShortURL(originalURL string) (string, error) {
@@ -68,6 +68,12 @@ func (db *DB) GetUserURLs(userID string) (models.Rows, error) {
 	query := `select short_url, original_url from urls where user_id = $1`
 	err := db.db.Select(&rows, query, userID)
 	return rows, err
+}
+
+func (db *DB) DeleteUserURLS(shortURLs []string, userID string) error {
+	query := `update urls set is_deleted = true where short_url = any($1) and user_id = $2`
+	_, err := db.db.Exec(query, pq.Array(shortURLs), userID)
+	return err
 }
 
 func (db *DB) Close() error {

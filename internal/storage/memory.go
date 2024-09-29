@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"github.com/lRhythm/shortener/internal/models"
+	"slices"
 )
 
 type Memory struct {
@@ -15,6 +16,11 @@ func (m *Memory) Ping() error {
 }
 
 func (m *Memory) Put(shortURL, originalURL, userID string) error {
+	for _, row := range *m.storage {
+		if originalURL == row.OriginalURL {
+			return models.ErrConflict
+		}
+	}
 	*m.storage = append(*m.storage, newRow(shortURL, originalURL, "", userID))
 	return nil
 }
@@ -26,13 +32,13 @@ func (m *Memory) Batch(rows models.Rows, userID string) error {
 	return nil
 }
 
-func (m *Memory) GetOriginalURL(shortURL string) (string, error) {
+func (m *Memory) GetOriginalURL(shortURL string) (string, bool, error) {
 	for _, row := range *m.storage {
 		if shortURL == row.ShortURL {
-			return row.OriginalURL, nil
+			return row.OriginalURL, row.IsDeleted, nil
 		}
 	}
-	return "", errors.New("short url not found")
+	return "", false, errors.New("short url not found")
 }
 
 func (m *Memory) GetShortURL(originalURL string) (string, error) {
@@ -55,6 +61,16 @@ func (m *Memory) GetUserURLs(userID string) (models.Rows, error) {
 		}
 	}
 	return rows, nil
+}
+
+func (m *Memory) DeleteUserURLS(shortURLs []string, userID string) error {
+	for i, row := range *m.storage {
+		if userID == row.UserID && slices.Contains(shortURLs, row.ShortURL) {
+			row.IsDeleted = true
+			(*m.storage)[i] = row
+		}
+	}
+	return nil
 }
 
 func (m *Memory) Close() error {

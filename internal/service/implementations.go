@@ -53,7 +53,7 @@ func (c *Client) CreateBatch(rows models.Rows, address, userID string) (models.R
 	return rows, nil
 }
 
-func (c *Client) GetOriginalURL(shortURL string) (string, error) {
+func (c *Client) GetOriginalURL(shortURL string) (string, bool, error) {
 	return c.storage.GetOriginalURL(shortURL)
 }
 
@@ -64,6 +64,21 @@ func (c *Client) GetUserURLs(address, userID string) (models.Rows, error) {
 	}
 	rows.ShortURLsWithAddress(address)
 	return rows, nil
+}
+
+func (c *Client) DeleteUserURLs(keys []string, userID string) {
+	// Реализация Fan-In для соответствия требованиям.
+	// Fan-In не требуется, т.к:
+	// - в имплементации PostgreSQL удаление осуществляется с помощью 1 запроса;
+	// - в имплементации InMemory сложность каждого вызова удаление 0n, где n - кол-во элементов слайса,
+	inCh := genStrs(keys...)
+	ch1 := pushStr(inCh)
+	ch2 := pushStr(inCh)
+	var values []string
+	for n := range fanInStr(ch1, ch2) {
+		values = append(values, n)
+	}
+	_ = c.storage.DeleteUserURLS(values, userID)
 }
 
 func (c *Client) GenerateUserID() string {

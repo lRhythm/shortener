@@ -13,6 +13,7 @@ func (s *Server) setupHandlers() *Server {
 	router.Get("/ping", s.pingHandler)
 	router.Get(fmt.Sprintf("/:%s", pathParamID), s.getHandler)
 	router.Get("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsGetHandler)
+	router.Delete("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsDeleteHandler)
 	router.Use(s.registerMiddleware)
 	router.Post("/api/shorten", s.apiCreateHandler)
 	router.Post("/api/shorten/batch", s.apiCreateBatchHandler)
@@ -98,10 +99,24 @@ func (s *Server) apiUserUrlsGetHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(rows)
 }
 
-func (s *Server) getHandler(c *fiber.Ctx) error {
-	originalURL, err := s.service.GetOriginalURL(c.Params(pathParamID))
+func (s *Server) apiUserUrlsDeleteHandler(c *fiber.Ctx) error {
+	headerContentTypeApplicationJSON(c)
+	var req []string
+	err := json.Unmarshal(c.Body(), &req)
 	if err != nil {
 		return badRequestResponse(c)
+	}
+	go s.service.DeleteUserURLs(req, userID(c))
+	return c.Status(fiber.StatusAccepted).Send(nil)
+}
+
+func (s *Server) getHandler(c *fiber.Ctx) error {
+	originalURL, isDeleted, err := s.service.GetOriginalURL(c.Params(pathParamID))
+	if err != nil {
+		return badRequestResponse(c)
+	}
+	if isDeleted {
+		return c.Status(fiber.StatusGone).Send(nil)
 	}
 	headerLocation(c, originalURL)
 	return c.Status(fiber.StatusTemporaryRedirect).Send(nil)

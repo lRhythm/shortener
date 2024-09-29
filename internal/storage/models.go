@@ -8,6 +8,7 @@ type Row struct {
 	OriginalURL   string `json:"original_url"`
 	CorrelationID string `json:"correlation_id"`
 	UserID        string `json:"user_id"`
+	IsDeleted     bool   `json:"is_deleted"`
 }
 
 func newRow(shortURL, originalURL, correlationID, userID string) Row {
@@ -17,6 +18,7 @@ func newRow(shortURL, originalURL, correlationID, userID string) Row {
 		ShortURL:      shortURL,
 		OriginalURL:   originalURL,
 		UserID:        userID,
+		IsDeleted:     false,
 	}
 }
 

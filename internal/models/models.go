@@ -6,6 +6,7 @@ type Row struct {
 	ShortURL      string `json:"short_url" db:"short_url"`
 	OriginalURL   string `json:"original_url" db:"original_url"`
 	CorrelationID string `json:"-"`
+	IsDeleted     bool   `json:"-" db:"is_deleted"`
 }
 
 type Rows []Row

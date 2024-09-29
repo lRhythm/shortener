@@ -264,6 +264,12 @@ func TestGetHandler(t *testing.T) {
 	su, _ := logic.CreateShortURL(ou, "http://localhost:8080", uuid.NewString())
 	u, _ := url.Parse(su)
 
+	// Создание и удаление в хранилище сокращенного URL для дальнейшей проверки.
+	uid := uuid.NewString()
+	dsu, _ := logic.CreateShortURL("https://yandex.ru", "http://localhost:8080", uid)
+	du, _ := url.Parse(dsu)
+	logic.DeleteUserURLs([]string{strings.Trim(du.Path, "/")}, uid)
+
 	tests := []struct {
 		name     string
 		route    string
@@ -281,6 +287,11 @@ func TestGetHandler(t *testing.T) {
 			name:   "2. 400 - error: short url not found",
 			route:  "/WRONG",
 			status: fiber.StatusBadRequest,
+		},
+		{
+			name:   "1. 410 - gone",
+			route:  du.Path,
+			status: fiber.StatusGone,
 		},
 	}
 	for _, test := range tests {
@@ -334,12 +345,12 @@ func TestApiUserUrlsGetHandler(t *testing.T) {
 			}},
 		},
 		{
-			name:   "1. 204 - no content",
+			name:   "2. 204 - no content",
 			status: fiber.StatusNoContent,
 			userID: uuid.NewString(),
 		},
 		{
-			name:   "1. 401 - unauthorized",
+			name:   "3. 401 - unauthorized",
 			status: fiber.StatusUnauthorized,
 		},
 	}
@@ -360,6 +371,61 @@ func TestApiUserUrlsGetHandler(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, test.resp, rb)
 			}
+			err = resp.Body.Close()
+			require.NoError(t, err)
+		})
+	}
+}
+
+// [DELETE] /api/user/urls
+func TestApiUserUrlsDeleteHandler(t *testing.T) {
+	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
+	logic := service.New(
+		service.WithStorage(db),
+	)
+	s, _ := New(
+		logs.New(),
+		cfg,
+		logic,
+	)
+	f := fiber.New()
+	f.Delete("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsDeleteHandler)
+
+	// Создание в хранилище сокращённых URL для дальнейшей проверки удаления.
+	var ss []string
+	uid := uuid.NewString()
+	for _, ou := range []string{"http://example.com", "https://ya.ru", "https://yandex.ru"} {
+		su, _ := logic.CreateShortURL(ou, "http://localhost:8080", uid)
+		u, _ := url.Parse(su)
+		ss = append(ss, strings.Trim(u.Path, "/"))
+	}
+
+	tests := []struct {
+		name   string
+		status int
+		userID string
+		req    []string
+	}{
+		{
+			name:   "1. 202 - accepted",
+			status: fiber.StatusAccepted,
+			userID: uid,
+			req:    ss,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			j, err := json.Marshal(test.req)
+			require.NoError(t, err)
+			req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(string(j)))
+			req.AddCookie(&http.Cookie{
+				Name:  cookieUserID,
+				Value: test.userID,
+			})
+			resp, _ := f.Test(req, -1)
+			assert.Equal(t, test.status, resp.StatusCode)
+			require.NoError(t, err)
 			err = resp.Body.Close()
 			require.NoError(t, err)
 		})
