@@ -5,6 +5,18 @@ import (
 	"github.com/lRhythm/shortener/internal/models"
 )
 
+func headerLocation(c *fiber.Ctx, location string) {
+	header(c, fiber.HeaderLocation, location)
+}
+
+func headerContentTypeApplicationJSON(c *fiber.Ctx) {
+	header(c, fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+}
+
+func header(c *fiber.Ctx, key, val string) {
+	c.Set(key, val)
+}
+
 func badRequestResponse(c *fiber.Ctx) error {
 	return errorResponse(c, fiber.StatusBadRequest)
 }

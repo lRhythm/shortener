@@ -2,6 +2,7 @@ package service
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -17,4 +18,46 @@ func (c *Client) genKey() string {
 		key[i] = charset[rand.Intn(charsetLen)]
 	}
 	return string(key)
+}
+
+func genStrs(strs ...string) chan string {
+	outCh := make(chan string)
+	go func() {
+		defer close(outCh)
+		for _, s := range strs {
+			outCh <- s
+		}
+	}()
+	return outCh
+}
+
+func pushStr(inCh chan string) chan string {
+	outCh := make(chan string)
+	go func() {
+		defer close(outCh)
+		for s := range inCh {
+			outCh <- s
+		}
+	}()
+	return outCh
+}
+
+func fanInStr(chs ...chan string) chan string {
+	outCh := make(chan string)
+	var wg sync.WaitGroup
+	output := func(c chan string) {
+		for s := range c {
+			outCh <- s
+		}
+		wg.Done()
+	}
+	wg.Add(len(chs))
+	for _, c := range chs {
+		go output(c)
+	}
+	go func() {
+		wg.Wait()
+		close(outCh)
+	}()
+	return outCh
 }

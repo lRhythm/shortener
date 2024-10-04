@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"github.com/lRhythm/shortener/internal/models"
+	"slices"
 )
 
 type Memory struct {
@@ -14,25 +15,30 @@ func (m *Memory) Ping() error {
 	return nil
 }
 
-func (m *Memory) Put(shortURL, originalURL string) error {
-	*m.storage = append(*m.storage, newRow(shortURL, originalURL, ""))
-	return nil
-}
-
-func (m *Memory) Batch(rows models.Rows) error {
-	for _, row := range rows {
-		*m.storage = append(*m.storage, newRow(row.ShortURL, row.OriginalURL, row.CorrelationID))
-	}
-	return nil
-}
-
-func (m *Memory) GetOriginalURL(shortURL string) (string, error) {
+func (m *Memory) Put(shortURL, originalURL, userID string) error {
 	for _, row := range *m.storage {
-		if shortURL == row.ShortURL {
-			return row.OriginalURL, nil
+		if originalURL == row.OriginalURL {
+			return models.ErrConflict
 		}
 	}
-	return "", errors.New("short url not found")
+	*m.storage = append(*m.storage, newRow(shortURL, originalURL, "", userID))
+	return nil
+}
+
+func (m *Memory) Batch(rows models.Rows, userID string) error {
+	for _, row := range rows {
+		*m.storage = append(*m.storage, newRow(row.ShortURL, row.OriginalURL, row.CorrelationID, userID))
+	}
+	return nil
+}
+
+func (m *Memory) GetOriginalURL(shortURL string) (string, bool, error) {
+	for _, row := range *m.storage {
+		if shortURL == row.ShortURL {
+			return row.OriginalURL, row.IsDeleted, nil
+		}
+	}
+	return "", false, errors.New("short url not found")
 }
 
 func (m *Memory) GetShortURL(originalURL string) (string, error) {
@@ -42,6 +48,29 @@ func (m *Memory) GetShortURL(originalURL string) (string, error) {
 		}
 	}
 	return "", errors.New("original url not found")
+}
+
+func (m *Memory) GetUserURLs(userID string) (models.Rows, error) {
+	rows := make(models.Rows, 0)
+	for _, row := range *m.storage {
+		if userID == row.UserID {
+			rows = append(rows, models.Row{
+				ShortURL:    row.ShortURL,
+				OriginalURL: row.OriginalURL,
+			})
+		}
+	}
+	return rows, nil
+}
+
+func (m *Memory) DeleteUserURLS(shortURLs []string, userID string) error {
+	for i, row := range *m.storage {
+		if userID == row.UserID && slices.Contains(shortURLs, row.ShortURL) {
+			row.IsDeleted = true
+			(*m.storage)[i] = row
+		}
+	}
+	return nil
 }
 
 func (m *Memory) Close() error {

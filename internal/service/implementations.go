@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"github.com/lRhythm/shortener/internal/models"
 	"net/url"
 )
@@ -10,14 +11,14 @@ func (c *Client) Ping() error {
 	return c.storage.Ping()
 }
 
-func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
+func (c *Client) CreateShortURL(originalURL, address, userID string) (string, error) {
 	var err, e error
 	_, err = url.ParseRequestURI(originalURL)
 	if err != nil {
 		return "", errors.New("invalid URL")
 	}
 	shortURL := c.genKey()
-	err = c.storage.Put(shortURL, originalURL)
+	err = c.storage.Put(shortURL, originalURL, userID)
 	if err != nil {
 		if !errors.Is(err, models.ErrConflict) {
 			return "", err
@@ -33,7 +34,7 @@ func (c *Client) CreateShortURL(originalURL, address string) (string, error) {
 	return s, nil
 }
 
-func (c *Client) CreateBatch(rows models.Rows, address string) (models.Rows, error) {
+func (c *Client) CreateBatch(rows models.Rows, address, userID string) (models.Rows, error) {
 	if len(rows) == 0 {
 		return nil, errors.New("rows is empty")
 	}
@@ -44,17 +45,47 @@ func (c *Client) CreateBatch(rows models.Rows, address string) (models.Rows, err
 		}
 		rows[i].ShortURL = c.genKey()
 	}
-	err := c.storage.Batch(rows)
+	err := c.storage.Batch(rows, userID)
 	if err != nil {
 		return nil, err
 	}
-	for i, row := range rows {
-		s, _ := url.JoinPath(address, row.ShortURL)
-		rows[i].ShortURL = s
-	}
+	rows.ShortURLsWithAddress(address)
 	return rows, nil
 }
 
-func (c *Client) GetOriginalURL(shortURL string) (string, error) {
+func (c *Client) GetOriginalURL(shortURL string) (string, bool, error) {
 	return c.storage.GetOriginalURL(shortURL)
+}
+
+func (c *Client) GetUserURLs(address, userID string) (models.Rows, error) {
+	rows, err := c.storage.GetUserURLs(userID)
+	if err != nil {
+		return nil, err
+	}
+	rows.ShortURLsWithAddress(address)
+	return rows, nil
+}
+
+func (c *Client) DeleteUserURLs(keys []string, userID string) {
+	// Реализация Fan-In для соответствия требованиям.
+	// Fan-In не требуется, т.к:
+	// - в имплементации PostgreSQL удаление осуществляется с помощью 1 запроса;
+	// - в имплементации InMemory сложность каждого вызова удаление 0n, где n - кол-во элементов слайса,
+	inCh := genStrs(keys...)
+	ch1 := pushStr(inCh)
+	ch2 := pushStr(inCh)
+	var values []string
+	for n := range fanInStr(ch1, ch2) {
+		values = append(values, n)
+	}
+	_ = c.storage.DeleteUserURLS(values, userID)
+}
+
+func (c *Client) GenerateUserID() string {
+	return uuid.NewString()
+}
+
+func (c *Client) ValidateUserID(userID string) error {
+	_, err := uuid.Parse(userID)
+	return err
 }
