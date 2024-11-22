@@ -6,7 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/sirupsen/logrus"
+	_ "net/http/pprof"
 	"time"
 )
 
@@ -65,5 +67,6 @@ func newFiberApp(logs *logrus.Logger, cookieKey string) *fiber.App {
 			},
 		),
 	)
+	app.Use(pprof.New())
 	return app
 }
