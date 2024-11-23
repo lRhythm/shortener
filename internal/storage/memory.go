@@ -2,8 +2,9 @@ package storage
 
 import (
 	"errors"
-	"github.com/lRhythm/shortener/internal/models"
 	"slices"
+
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 type Memory struct {

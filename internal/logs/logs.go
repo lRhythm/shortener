@@ -1,8 +1,6 @@
 package logs
 
-import (
-	"github.com/sirupsen/logrus"
-)
+import "github.com/sirupsen/logrus"
 
 func New() *logrus.Logger {
 	var logger = logrus.New()

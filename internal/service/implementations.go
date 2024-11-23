@@ -2,9 +2,11 @@ package service
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	"github.com/lRhythm/shortener/internal/models"
 	"net/url"
+
+	"github.com/google/uuid"
+
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 func (c *Client) Ping() error {

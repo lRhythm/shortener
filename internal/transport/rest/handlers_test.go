@@ -2,21 +2,23 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-	"github.com/lRhythm/shortener/internal/config"
-	"github.com/lRhythm/shortener/internal/logs"
-	"github.com/lRhythm/shortener/internal/models"
-	"github.com/lRhythm/shortener/internal/service"
-	"github.com/lRhythm/shortener/internal/storage"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/lRhythm/shortener/internal/config"
+	"github.com/lRhythm/shortener/internal/logs"
+	"github.com/lRhythm/shortener/internal/models"
+	"github.com/lRhythm/shortener/internal/service"
+	"github.com/lRhythm/shortener/internal/storage"
 )
 
 // [POST] /api/shorten

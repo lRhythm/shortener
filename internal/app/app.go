@@ -1,14 +1,15 @@
 package app
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/lRhythm/shortener/internal/config"
 	"github.com/lRhythm/shortener/internal/logs"
 	"github.com/lRhythm/shortener/internal/service"
 	"github.com/lRhythm/shortener/internal/storage"
 	"github.com/lRhythm/shortener/internal/transport/rest"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func Start() {

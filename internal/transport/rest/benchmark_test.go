@@ -2,9 +2,11 @@ package rest
 
 import (
 	"encoding/json"
-	gojson "github.com/goccy/go-json"
-	"github.com/lRhythm/shortener/internal/models"
 	"testing"
+
+	gojson "github.com/goccy/go-json"
+
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 func mock() []models.Row {

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/gofiber/fiber/v2"
+
 	"github.com/lRhythm/shortener/internal/models"
 )
 

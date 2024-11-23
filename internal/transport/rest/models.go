@@ -2,8 +2,9 @@ package rest
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/lRhythm/shortener/internal/models"
 	"github.com/sirupsen/logrus"
+
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 type serviceInterface interface {

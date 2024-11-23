@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+
 	"github.com/lRhythm/shortener/internal/models"
 )
 

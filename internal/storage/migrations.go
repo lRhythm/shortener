@@ -1,11 +1,12 @@
 package storage
 
 import (
-	"github.com/jmoiron/sqlx"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/jmoiron/sqlx"
 )
 
 const up = "up"

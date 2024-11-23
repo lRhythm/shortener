@@ -2,14 +2,15 @@ package rest
 
 import (
 	"errors"
+	_ "net/http/pprof"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/sirupsen/logrus"
-	_ "net/http/pprof"
-	"time"
 )
 
 func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Server, error) {

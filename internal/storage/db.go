@@ -2,10 +2,12 @@ package storage
 
 import (
 	"errors"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jmoiron/sqlx"
-	"github.com/lRhythm/shortener/internal/models"
 	"github.com/lib/pq"
+
+	"github.com/lRhythm/shortener/internal/models"
 )
 
 type DB struct {

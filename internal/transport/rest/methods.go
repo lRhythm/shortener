@@ -1,8 +1,9 @@
 package rest
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"net/url"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func (s *Server) address(c *fiber.Ctx) (string, error) {
