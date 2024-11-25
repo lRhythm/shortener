@@ -9,6 +9,7 @@ import (
 	"github.com/lRhythm/shortener/internal/models"
 )
 
+// mock - генерация моковых данных для BenchmarkEncode и BenchmarkDecode.
 func mock() []models.Row {
 	size := 1_000
 	s := make([]models.Row, size)
@@ -23,6 +24,7 @@ func mock() []models.Row {
 	return s
 }
 
+// BenchmarkEncode - проверка encode пакетов encoding/json и goccy/go-json.
 func BenchmarkEncode(b *testing.B) {
 	data := mock()
 	b.ResetTimer()
@@ -38,6 +40,7 @@ func BenchmarkEncode(b *testing.B) {
 	})
 }
 
+// BenchmarkDecode - проверка decode пакетов encoding/json и goccy/go-json.
 func BenchmarkDecode(b *testing.B) {
 	data, _ := json.Marshal(mock())
 	b.ResetTimer()

@@ -9,8 +9,10 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// up - ключ migrations по которому содержатся миграция для применения.
 const up = "up"
 
+// migrations - все миграции.
 var migrations = map[string][]string{
 	up: {
 		//    ↓ - `storage/`.
@@ -23,6 +25,7 @@ var migrations = map[string][]string{
 	// If needed: `down: {"..."}`.
 }
 
+// migrate - применение миграций.
 func migrate(db *sqlx.DB) error {
 	_, fp, _, _ := runtime.Caller(0)
 	dp := filepath.Dir(fp)

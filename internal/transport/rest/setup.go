@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// New - конструктор Server.
 func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Server, error) {
 	if logs == nil {
 		return nil, errors.New("logs must not be nil")
@@ -31,14 +32,17 @@ func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Serv
 	return s.setupHandlers(), nil
 }
 
+// Listen - прослушивание HTTP запросов сервера с указанного адреса.
 func (s *Server) Listen() error {
 	return s.app.Listen(s.cfg.Host())
 }
 
+// Shutdown - корректно завершает работу сервера, не прерывая активные соединения.
 func (s *Server) Shutdown() error {
 	return s.app.Shutdown()
 }
 
+// newFiberApp - конструктор fiber framework для сервера.
 func newFiberApp(logs *logrus.Logger, cookieKey string) *fiber.App {
 	app := fiber.New(
 		fiber.Config{

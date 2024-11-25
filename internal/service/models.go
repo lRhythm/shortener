@@ -2,6 +2,7 @@ package service
 
 import "github.com/lRhythm/shortener/internal/models"
 
+// RepositoryInterface - интерфейс для имплементации хранилищем.
 type RepositoryInterface interface {
 	commonInterface
 	Put(shortURL, originalURL, userID string) (err error)
@@ -12,11 +13,13 @@ type RepositoryInterface interface {
 	DeleteUserURLS(shortURLs []string, userID string) (err error)
 }
 
+// commonInterface - интерфейс вспомогательных методов хранилища.
 type commonInterface interface {
 	Ping() (err error)
 	Close() (err error)
 }
 
+// Client - основной объект пакета для взаимодействия.
 type Client struct {
 	storage RepositoryInterface
 }

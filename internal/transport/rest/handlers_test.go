@@ -33,7 +33,7 @@ func TestApiCreateHandler(t *testing.T) {
 		),
 	)
 	f := fiber.New()
-	f.Post("/api/shorten", s.registerMiddleware, s.apiCreateHandler)
+	f.Post("/api/shorten", s.registerMiddleware, s.APICreateHandler)
 	tests := []struct {
 		name        string
 		route       string
@@ -95,7 +95,7 @@ func TestApiCreateBatchHandler(t *testing.T) {
 		),
 	)
 	f := fiber.New()
-	f.Post("/api/shorten/batch", s.registerMiddleware, s.apiCreateBatchHandler)
+	f.Post("/api/shorten/batch", s.registerMiddleware, s.APICreateBatchHandler)
 	tests := []struct {
 		name        string
 		route       string
@@ -202,7 +202,7 @@ func TestCreateHandler(t *testing.T) {
 		),
 	)
 	f := fiber.New()
-	f.Post("/", s.registerMiddleware, s.createHandler)
+	f.Post("/", s.registerMiddleware, s.CreateHandler)
 	tests := []struct {
 		name   string
 		route  string
@@ -259,7 +259,7 @@ func TestGetHandler(t *testing.T) {
 		logic,
 	)
 	f := fiber.New()
-	f.Get("/:id", s.getHandler)
+	f.Get("/:id", s.GetHandler)
 
 	// Создание в хранилище сокращенного URL для дальнейшей проверки.
 	ou := "https://ya.ru"
@@ -323,7 +323,7 @@ func TestApiUserUrlsGetHandler(t *testing.T) {
 		logic,
 	)
 	f := fiber.New()
-	f.Get("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsGetHandler)
+	f.Get("/api/user/urls", s.authenticateMiddleware, s.APIUserUrlsGetHandler)
 
 	// Создание в хранилище сокращенного URL для дальнейшей проверки.
 	uid := uuid.NewString()
@@ -392,7 +392,7 @@ func TestApiUserUrlsDeleteHandler(t *testing.T) {
 		logic,
 	)
 	f := fiber.New()
-	f.Delete("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsDeleteHandler)
+	f.Delete("/api/user/urls", s.authenticateMiddleware, s.APIUserUrlsDeleteHandler)
 
 	// Создание в хранилище сокращённых URL для дальнейшей проверки удаления.
 	var ss []string

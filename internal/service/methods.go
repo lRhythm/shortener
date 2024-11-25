@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// genKey - генерация подстроки со случайной последовательностью символов как сокращенный URL.
 func (c *Client) genKey() string {
 	var (
 		charset    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -20,6 +21,7 @@ func (c *Client) genKey() string {
 	return string(key)
 }
 
+// genStrs - для реализации Fan-In.
 func genStrs(strs ...string) chan string {
 	outCh := make(chan string)
 	go func() {
@@ -31,6 +33,7 @@ func genStrs(strs ...string) chan string {
 	return outCh
 }
 
+// genStrs - для реализации Fan-In.
 func pushStr(inCh chan string) chan string {
 	outCh := make(chan string)
 	go func() {
@@ -42,6 +45,7 @@ func pushStr(inCh chan string) chan string {
 	return outCh
 }
 
+// genStrs - реализация Fan-In.
 func fanInStr(chs ...chan string) chan string {
 	outCh := make(chan string)
 	var wg sync.WaitGroup

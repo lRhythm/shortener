@@ -10,27 +10,30 @@ import (
 	"github.com/lRhythm/shortener/internal/models"
 )
 
+// setupHandlers - определения обработчиков маршрутов.
 func (s *Server) setupHandlers() *Server {
 	router := s.app.Group(s.cfg.Path())
-	router.Get("/ping", s.pingHandler)
-	router.Get(fmt.Sprintf("/:%s", pathParamID), s.getHandler)
-	router.Get("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsGetHandler)
-	router.Delete("/api/user/urls", s.authenticateMiddleware, s.apiUserUrlsDeleteHandler)
+	router.Get("/ping", s.PingHandler)
+	router.Get(fmt.Sprintf("/:%s", pathParamID), s.GetHandler)
+	router.Get("/api/user/urls", s.authenticateMiddleware, s.APIUserUrlsGetHandler)
+	router.Delete("/api/user/urls", s.authenticateMiddleware, s.APIUserUrlsDeleteHandler)
 	router.Use(s.registerMiddleware)
-	router.Post("/api/shorten", s.apiCreateHandler)
-	router.Post("/api/shorten/batch", s.apiCreateBatchHandler)
-	router.Post("/", s.createHandler)
+	router.Post("/api/shorten", s.APICreateHandler)
+	router.Post("/api/shorten/batch", s.APICreateBatchHandler)
+	router.Post("/", s.CreateHandler)
 	return s
 }
 
-func (s *Server) pingHandler(c *fiber.Ctx) error {
+// PingHandler - обработчик маршрута ping.
+func (s *Server) PingHandler(c *fiber.Ctx) error {
 	if err := s.service.Ping(); err != nil {
 		return internalServerErrorResponse(c)
 	}
 	return c.Status(fiber.StatusOK).Send(nil)
 }
 
-func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
+// APICreateHandler - обработчик маршрута создания сокращенного URL.
+func (s *Server) APICreateHandler(c *fiber.Ctx) error {
 	headerContentTypeApplicationJSON(c)
 	var req createRequest
 	err := json.Unmarshal(c.Body(), &req)
@@ -52,7 +55,8 @@ func (s *Server) apiCreateHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(newCreateResponse(shortURL))
 }
 
-func (s *Server) apiCreateBatchHandler(c *fiber.Ctx) error {
+// APICreateBatchHandler - обработчик маршрута пакетного создания сокращенного URL.
+func (s *Server) APICreateBatchHandler(c *fiber.Ctx) error {
 	headerContentTypeApplicationJSON(c)
 	var req createItemsRequest
 	err := json.Unmarshal(c.Body(), &req)
@@ -70,7 +74,8 @@ func (s *Server) apiCreateBatchHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(newCreateItemsResponse(rows))
 }
 
-func (s *Server) createHandler(c *fiber.Ctx) error {
+// CreateHandler - обработчик маршрута создания сокращенного URL.
+func (s *Server) CreateHandler(c *fiber.Ctx) error {
 	a, err := s.address(c)
 	if err != nil {
 		return badRequestResponse(c)
@@ -85,7 +90,8 @@ func (s *Server) createHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).Send([]byte(shortURL))
 }
 
-func (s *Server) apiUserUrlsGetHandler(c *fiber.Ctx) error {
+// APIUserUrlsGetHandler - обработчик маршрута получения сокращенных URL пользователя.
+func (s *Server) APIUserUrlsGetHandler(c *fiber.Ctx) error {
 	headerContentTypeApplicationJSON(c)
 	a, err := s.address(c)
 	if err != nil {
@@ -101,7 +107,8 @@ func (s *Server) apiUserUrlsGetHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(rows)
 }
 
-func (s *Server) apiUserUrlsDeleteHandler(c *fiber.Ctx) error {
+// APIUserUrlsDeleteHandler - обработчик маршрута удаления сокращенных URL пользователя.
+func (s *Server) APIUserUrlsDeleteHandler(c *fiber.Ctx) error {
 	headerContentTypeApplicationJSON(c)
 	var req []string
 	err := json.Unmarshal(c.Body(), &req)
@@ -112,7 +119,8 @@ func (s *Server) apiUserUrlsDeleteHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusAccepted).Send(nil)
 }
 
-func (s *Server) getHandler(c *fiber.Ctx) error {
+// GetHandler - обработчик маршрута получения оригинального URL по сокращенному URL.
+func (s *Server) GetHandler(c *fiber.Ctx) error {
 	originalURL, isDeleted, err := s.service.GetOriginalURL(c.Params(pathParamID))
 	if err != nil {
 		return badRequestResponse(c)

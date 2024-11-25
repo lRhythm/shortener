@@ -7,8 +7,10 @@ import (
 	"os"
 )
 
+// ls - line separator.
 const ls byte = '\n'
 
+// file - структура для работы с файлом как с хранилищем.
 type file struct {
 	r      *os.File
 	reader *bufio.Reader
@@ -16,6 +18,7 @@ type file struct {
 	writer *bufio.Writer
 }
 
+// newFile - создание file для операций чтения и записи.
 func newFile(fname string) (*file, error) {
 	r, err := os.OpenFile(fname, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -33,6 +36,7 @@ func newFile(fname string) (*file, error) {
 	}, nil
 }
 
+// read - операция чтения из файла.
 func (f *file) read() ([]byte, error) {
 	b, err := f.reader.ReadBytes(ls)
 	if err != nil && err == io.EOF {
@@ -41,6 +45,7 @@ func (f *file) read() ([]byte, error) {
 	return b, err
 }
 
+// readRows - чтение из файла и преобразование в *[]Row.
 func (f *file) readRows() (*[]Row, error) {
 	b, err := f.read()
 	if err != nil {
@@ -56,6 +61,7 @@ func (f *file) readRows() (*[]Row, error) {
 	return &rows, nil
 }
 
+// write - операция записи в файл.
 func (f *file) write(b []byte) error {
 	_, err := f.writer.Write(b)
 	if err != nil {
@@ -68,6 +74,7 @@ func (f *file) write(b []byte) error {
 	return f.writer.Flush()
 }
 
+// readRows - запись в файла *[]Row.
 func (f *file) writeRows(rows *[]Row) error {
 	b, err := json.Marshal(rows)
 	if err != nil {
@@ -80,6 +87,7 @@ func (f *file) writeRows(rows *[]Row) error {
 	return nil
 }
 
+// close - закрытие файла после чтения из записи.
 func (f *file) close() {
 	_ = f.r.Close()
 	_ = f.w.Close()

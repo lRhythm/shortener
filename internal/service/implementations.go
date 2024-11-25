@@ -9,10 +9,12 @@ import (
 	"github.com/lRhythm/shortener/internal/models"
 )
 
+// Ping - логика маршрута ping.
 func (c *Client) Ping() error {
 	return c.storage.Ping()
 }
 
+// CreateShortURL - логика маршрута создания сокращенного URL.
 func (c *Client) CreateShortURL(originalURL, address, userID string) (string, error) {
 	var err, e error
 	_, err = url.ParseRequestURI(originalURL)
@@ -36,6 +38,7 @@ func (c *Client) CreateShortURL(originalURL, address, userID string) (string, er
 	return s, nil
 }
 
+// CreateBatch - логика маршрута пакетного создания сокращенного URL.
 func (c *Client) CreateBatch(rows models.Rows, address, userID string) (models.Rows, error) {
 	if len(rows) == 0 {
 		return nil, errors.New("rows is empty")
@@ -55,10 +58,12 @@ func (c *Client) CreateBatch(rows models.Rows, address, userID string) (models.R
 	return rows, nil
 }
 
+// GetOriginalURL - логика маршрута получения оригинального URL по сокращенному URL.
 func (c *Client) GetOriginalURL(shortURL string) (string, bool, error) {
 	return c.storage.GetOriginalURL(shortURL)
 }
 
+// GetUserURLs - логика маршрута получения сокращенных URL пользователя.
 func (c *Client) GetUserURLs(address, userID string) (models.Rows, error) {
 	rows, err := c.storage.GetUserURLs(userID)
 	if err != nil {
@@ -68,6 +73,7 @@ func (c *Client) GetUserURLs(address, userID string) (models.Rows, error) {
 	return rows, nil
 }
 
+// DeleteUserURLs - логика маршрута удаления сокращенных URL пользователя.
 func (c *Client) DeleteUserURLs(keys []string, userID string) {
 	// Реализация Fan-In для соответствия требованиям.
 	// Fan-In не требуется, т.к:
@@ -83,10 +89,12 @@ func (c *Client) DeleteUserURLs(keys []string, userID string) {
 	_ = c.storage.DeleteUserURLS(values, userID)
 }
 
+// GenerateUserID - логика генерации идентификатора пользователя в маршруте регистрации пользователя.
 func (c *Client) GenerateUserID() string {
 	return uuid.NewString()
 }
 
+// ValidateUserID - логика валидации идентификатора пользователя.
 func (c *Client) ValidateUserID(userID string) error {
 	_, err := uuid.Parse(userID)
 	return err

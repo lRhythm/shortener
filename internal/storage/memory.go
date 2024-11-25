@@ -7,15 +7,18 @@ import (
 	"github.com/lRhythm/shortener/internal/models"
 )
 
+// Memory - объект пакета для взаимодействия с памятью.
 type Memory struct {
 	storage *[]Row
 	file    *file
 }
 
+// Ping - заглушка для соответствия интерфейсу service.RepositoryInterface.
 func (m *Memory) Ping() error {
 	return nil
 }
 
+// Put - операция добавления в память сокращенного URL.
 func (m *Memory) Put(shortURL, originalURL, userID string) error {
 	for _, row := range *m.storage {
 		if originalURL == row.OriginalURL {
@@ -26,6 +29,7 @@ func (m *Memory) Put(shortURL, originalURL, userID string) error {
 	return nil
 }
 
+// Batch - операция пакетного добавления в память сокращенного URL.
 func (m *Memory) Batch(rows models.Rows, userID string) error {
 	for _, row := range rows {
 		*m.storage = append(*m.storage, newRow(row.ShortURL, row.OriginalURL, row.CorrelationID, userID))
@@ -33,6 +37,7 @@ func (m *Memory) Batch(rows models.Rows, userID string) error {
 	return nil
 }
 
+// GetOriginalURL - операция получения из памяти исходного URL по сокращенному.
 func (m *Memory) GetOriginalURL(shortURL string) (string, bool, error) {
 	for _, row := range *m.storage {
 		if shortURL == row.ShortURL {
@@ -42,6 +47,7 @@ func (m *Memory) GetOriginalURL(shortURL string) (string, bool, error) {
 	return "", false, errors.New("short url not found")
 }
 
+// GetShortURL - операция добавления в память сокращенного URL по исходному.
 func (m *Memory) GetShortURL(originalURL string) (string, error) {
 	for _, row := range *m.storage {
 		if originalURL == row.OriginalURL {
@@ -51,6 +57,7 @@ func (m *Memory) GetShortURL(originalURL string) (string, error) {
 	return "", errors.New("original url not found")
 }
 
+// GetUserURLs - операция получения из памяти сокращенных URL пользователя.
 func (m *Memory) GetUserURLs(userID string) (models.Rows, error) {
 	rows := make(models.Rows, 0)
 	for _, row := range *m.storage {
@@ -64,6 +71,7 @@ func (m *Memory) GetUserURLs(userID string) (models.Rows, error) {
 	return rows, nil
 }
 
+// DeleteUserURLS - операция удаления из памяти сокращенных URL пользователя.
 func (m *Memory) DeleteUserURLS(shortURLs []string, userID string) error {
 	for i, row := range *m.storage {
 		if userID == row.UserID && slices.Contains(shortURLs, row.ShortURL) {
@@ -74,6 +82,7 @@ func (m *Memory) DeleteUserURLS(shortURLs []string, userID string) error {
 	return nil
 }
 
+// Close - закрытие клиента работы с памятью: запись в файл данных из хранилища в памяти.
 func (m *Memory) Close() error {
 	defer m.file.close()
 	err := m.file.writeRows(m.storage)
@@ -83,6 +92,7 @@ func (m *Memory) Close() error {
 	return nil
 }
 
+// NewMemory - создание объекта хранилища в памяти.
 func NewMemory(fname string) (*Memory, error) {
 	f, err := newFile(fname)
 	if err != nil {

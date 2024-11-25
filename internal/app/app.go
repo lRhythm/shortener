@@ -12,6 +12,7 @@ import (
 	"github.com/lRhythm/shortener/internal/transport/rest"
 )
 
+// Start - запуск сервиса.
 func Start() {
 	logger := logs.New()
 
