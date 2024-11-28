@@ -1,5 +1,6 @@
 package config
 
+// UnmarshalText - decode собственного типа serverAddress для вызова пакетом caarlos0/env.
 func (t *serverAddress) UnmarshalText(text []byte) error {
 	v := string(text)
 	if v == "" {
@@ -13,6 +14,7 @@ func (t *serverAddress) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// UnmarshalText - decode собственного типа baseURL для вызова пакетом caarlos0/env.
 func (t *baseURL) UnmarshalText(text []byte) error {
 	v := string(text)
 	if v == "" {
@@ -26,6 +28,7 @@ func (t *baseURL) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// UnmarshalText - decode собственного типа fileStoragePath для вызова пакетом caarlos0/env.
 func (t *fileStoragePath) UnmarshalText(text []byte) error {
 	v := string(text)
 	if v == "" {

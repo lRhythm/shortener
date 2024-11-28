@@ -2,9 +2,11 @@ package config
 
 import (
 	"flag"
+
 	"github.com/caarlos0/env/v6"
 )
 
+// New - создание и заполнение структуры конфигурации сервиса.
 func New() (*Cfg, error) {
 	var cfg Cfg
 	err := env.Parse(&cfg)
@@ -14,6 +16,7 @@ func New() (*Cfg, error) {
 	return cfg.withFlags().withDefault(), nil
 }
 
+// withFlags - поддержка флагов для заполнения config.
 func (c *Cfg) withFlags() *Cfg {
 	sa := new(serverAddress)
 	bu := new(baseURL)
@@ -58,6 +61,7 @@ func (c *Cfg) withFlags() *Cfg {
 	return c
 }
 
+// withDefault - установка значений полей в config по умолчанию, если значения не определены ранее.
 func (c *Cfg) withDefault() *Cfg {
 	if c.ServerAddress == "" {
 		c.ServerAddress = "localhost:8080"

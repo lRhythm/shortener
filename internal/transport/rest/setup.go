@@ -2,14 +2,18 @@ package rest
 
 import (
 	"errors"
+	_ "net/http/pprof"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
+// New - конструктор Server.
 func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Server, error) {
 	if logs == nil {
 		return nil, errors.New("logs must not be nil")
@@ -28,14 +32,17 @@ func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Serv
 	return s.setupHandlers(), nil
 }
 
+// Listen - прослушивание HTTP запросов сервера с указанного адреса.
 func (s *Server) Listen() error {
 	return s.app.Listen(s.cfg.Host())
 }
 
+// Shutdown - корректно завершает работу сервера, не прерывая активные соединения.
 func (s *Server) Shutdown() error {
 	return s.app.Shutdown()
 }
 
+// newFiberApp - конструктор fiber framework для сервера.
 func newFiberApp(logs *logrus.Logger, cookieKey string) *fiber.App {
 	app := fiber.New(
 		fiber.Config{
@@ -65,5 +72,6 @@ func newFiberApp(logs *logrus.Logger, cookieKey string) *fiber.App {
 			},
 		),
 	)
+	app.Use(pprof.New())
 	return app
 }

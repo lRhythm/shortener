@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// validate - валидация значения типа serverAddress.
 func (t *serverAddress) validate(v string) error {
 	hp := strings.Split(v, ":")
 	if len(hp) != 2 {
@@ -20,11 +21,13 @@ func (t *serverAddress) validate(v string) error {
 	return nil
 }
 
+// validate - валидация значения типа baseURL.
 func (t *baseURL) validate(v string) error {
 	_, err := url.ParseRequestURI(v)
 	return err
 }
 
+// validate - валидация значения типа fileStoragePath.
 func (t *fileStoragePath) validate(v string) error {
 	f, err := os.OpenFile(v, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {

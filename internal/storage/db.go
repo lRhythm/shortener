@@ -2,20 +2,25 @@ package storage
 
 import (
 	"errors"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jmoiron/sqlx"
-	"github.com/lRhythm/shortener/internal/models"
 	"github.com/lib/pq"
+
+	"github.com/lRhythm/shortener/internal/models"
 )
 
+// DB - объект пакета для взаимодействия с БД.
 type DB struct {
 	db *sqlx.DB
 }
 
+// Ping - пинг БД для реализации healthcheck.
 func (db *DB) Ping() error {
 	return db.db.Ping()
 }
 
+// Put - выполнение запроса добавления в БД сокращенного URL.
 func (db *DB) Put(shortURL, originalURL, userID string) error {
 	query := `insert into urls (short_url, original_url, user_id) values ($1, $2, $3)`
 	_, err := db.db.Exec(query, shortURL, originalURL, userID)
@@ -28,6 +33,7 @@ func (db *DB) Put(shortURL, originalURL, userID string) error {
 	return err
 }
 
+// Batch - выполнение запросов пакетного добавления в БД сокращенного URL.
 func (db *DB) Batch(rows models.Rows, userID string) error {
 	tx, err := db.db.Begin()
 	if err != nil {
@@ -49,6 +55,7 @@ func (db *DB) Batch(rows models.Rows, userID string) error {
 	return tx.Commit()
 }
 
+// GetOriginalURL - выполнение запроса получения из БД исходного URL по сокращенному.
 func (db *DB) GetOriginalURL(shortURL string) (string, bool, error) {
 	var row models.Row
 	query := `select original_url, is_deleted from urls where short_url = $1`
@@ -56,6 +63,7 @@ func (db *DB) GetOriginalURL(shortURL string) (string, bool, error) {
 	return row.OriginalURL, row.IsDeleted, err
 }
 
+// GetShortURL - выполнение запроса добавление в БД сокращенного URL по исходному.
 func (db *DB) GetShortURL(originalURL string) (string, error) {
 	var shortURL string
 	query := `select short_url from urls where original_url = $1`
@@ -63,6 +71,7 @@ func (db *DB) GetShortURL(originalURL string) (string, error) {
 	return shortURL, err
 }
 
+// GetUserURLs - выполнение запроса получения из БД сокращенных URL пользователя.
 func (db *DB) GetUserURLs(userID string) (models.Rows, error) {
 	rows := make(models.Rows, 0)
 	query := `select short_url, original_url from urls where user_id = $1`
@@ -70,16 +79,19 @@ func (db *DB) GetUserURLs(userID string) (models.Rows, error) {
 	return rows, err
 }
 
+// DeleteUserURLS - выполнение запроса удаления из БД сокращенных URL пользователя.
 func (db *DB) DeleteUserURLS(shortURLs []string, userID string) error {
 	query := `update urls set is_deleted = true where short_url = any($1) and user_id = $2`
 	_, err := db.db.Exec(query, pq.Array(shortURLs), userID)
 	return err
 }
 
+// Close - закрытие соединения БД.
 func (db *DB) Close() error {
 	return db.db.Close()
 }
 
+// NewDB - создание объекта БД.
 func NewDB(DSN string) (*DB, error) {
 	db, err := sqlx.Open("postgres", DSN)
 	if err != nil {
