@@ -1,3 +1,6 @@
+/*
+Package models - содержит объявление моделей, используемых в нескольких пакетах internal/.
+*/
 package models
 
 import "net/url"

@@ -1,3 +1,6 @@
+/*
+Package rest - реализация стандарта REST api для HTTP взаимодействия с сервисом.
+*/
 package rest
 
 import (
