@@ -1,3 +1,6 @@
+/*
+Package config - настройка конфигурации сервиса.
+*/
 package config
 
 import (

@@ -1,3 +1,6 @@
+/*
+Package service - слой бизнес логики сервиса.
+*/
 package service
 
 // New - конструктор Client.

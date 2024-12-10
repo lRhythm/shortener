@@ -1,3 +1,6 @@
+/*
+Package storage - имплементации хранилища сервиса.
+*/
 package storage
 
 import "github.com/google/uuid"

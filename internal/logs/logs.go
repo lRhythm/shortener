@@ -1,3 +1,6 @@
+/*
+Package logs - пользовательское логирование сервиса.
+*/
 package logs
 
 import "github.com/sirupsen/logrus"
