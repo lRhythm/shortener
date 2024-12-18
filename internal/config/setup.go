@@ -25,6 +25,7 @@ func (c *Cfg) withFlags() *Cfg {
 	bu := new(baseURL)
 	fsp := new(fileStoragePath)
 	dd := new(databaseDSN)
+	var tls bool
 	var needParse bool
 	if flag.Lookup("a") == nil {
 		_ = flag.Value(sa)
@@ -46,6 +47,10 @@ func (c *Cfg) withFlags() *Cfg {
 		flag.Var(dd, "d", "PostgreSQL DSN")
 		needParse = true
 	}
+	if flag.Lookup("s") == nil {
+		flag.BoolVar(&tls, "s", false, "Enable TLS (HTTPS)")
+		needParse = true
+	}
 	if needParse {
 		flag.Parse()
 	}
@@ -61,6 +66,11 @@ func (c *Cfg) withFlags() *Cfg {
 	if *dd != "" && c.DatabaseDSN == "" {
 		c.DatabaseDSN = *dd
 	}
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "s" {
+			c.TLSEnable = tls
+		}
+	})
 	return c
 }
 

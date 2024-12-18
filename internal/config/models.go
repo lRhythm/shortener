@@ -19,6 +19,9 @@ type Cfg struct {
 	BaseURL         baseURL         `env:"BASE_URL"`
 	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH"`
 	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN"`
+	TLSEnable       bool            `env:"ENABLE_HTTPS"`
+	TLSPemPath      string          `env:"TLS_PEM" envDefault:"../../configs/tls.pem"`
+	TLSKeyPath      string          `env:"TLS_KEY" envDefault:"../../configs/tls.key"`
 	CookieSecretKey string          `env:"COOKIE_SECRET_KEY" envDefault:"o04n+9H6PWZs8PSxQqh9R1bWDL3sEUMfzx1gg0XTWns="`
 }
 
@@ -45,6 +48,21 @@ func (c *Cfg) File() string {
 func (c *Cfg) DSN() (string, bool) {
 	dsn := string(c.DatabaseDSN)
 	return dsn, len(dsn) > 0
+}
+
+// TLS - получение флага активности HTTPS.
+func (c *Cfg) TLS() bool {
+	return c.TLSEnable
+}
+
+// TLSPem - получение пути к файлу *.pem.
+func (c *Cfg) TLSPem() string {
+	return c.TLSPemPath
+}
+
+// TLSKey - получение пути к файлу *.key.
+func (c *Cfg) TLSKey() string {
+	return c.TLSKeyPath
 }
 
 // CookieKey - получение ключа шифрования cookie.
