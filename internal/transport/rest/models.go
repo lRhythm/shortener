@@ -38,7 +38,7 @@ type userInterface interface {
 type cfgInterface interface {
 	Host() string
 	Path() string
-	TLS() bool
+	TLSEnable() bool
 	TLSPem() string
 	TLSKey() string
 	CookieKey() string

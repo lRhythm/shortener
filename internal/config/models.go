@@ -15,14 +15,16 @@ type (
 
 // Cfg - структура описывающая конфигурацию сервиса.
 type Cfg struct {
-	ServerAddress   serverAddress   `env:"SERVER_ADDRESS"`
-	BaseURL         baseURL         `env:"BASE_URL"`
-	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH"`
-	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN"`
-	TLSEnable       bool            `env:"ENABLE_HTTPS"`
-	TLSPemPath      string          `env:"TLS_PEM" envDefault:"../../configs/tls.pem"`
-	TLSKeyPath      string          `env:"TLS_KEY" envDefault:"../../configs/tls.key"`
-	CookieSecretKey string          `env:"COOKIE_SECRET_KEY" envDefault:"o04n+9H6PWZs8PSxQqh9R1bWDL3sEUMfzx1gg0XTWns="`
+	ServerAddress   serverAddress   `env:"SERVER_ADDRESS" json:"server_address"`
+	BaseURL         baseURL         `env:"BASE_URL" json:"base_url"`
+	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH" json:"file_storage_path"`
+	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN" json:"database_dsn"`
+	EnableHTTPS     *bool           `env:"ENABLE_HTTPS" json:"enable_https"`
+	Config          string          `env:"CONFIG"`
+
+	TLSPemPath      string `env:"TLS_PEM" envDefault:"../../configs/tls.pem"`
+	TLSKeyPath      string `env:"TLS_KEY" envDefault:"../../configs/tls.key"`
+	CookieSecretKey string `env:"COOKIE_SECRET_KEY" envDefault:"o04n+9H6PWZs8PSxQqh9R1bWDL3sEUMfzx1gg0XTWns="`
 }
 
 // Host - получение адреса запуска сервиса.
@@ -50,9 +52,13 @@ func (c *Cfg) DSN() (string, bool) {
 	return dsn, len(dsn) > 0
 }
 
-// TLS - получение флага активности HTTPS.
-func (c *Cfg) TLS() bool {
-	return c.TLSEnable
+// TLSEnable - получение флага активности HTTPS.
+func (c *Cfg) TLSEnable() bool {
+	if c.EnableHTTPS == nil {
+		// Если вдруг не был вызван Cfg.withDefault().
+		return false
+	}
+	return *c.EnableHTTPS
 }
 
 // TLSPem - получение пути к файлу *.pem.

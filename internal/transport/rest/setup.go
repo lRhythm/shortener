@@ -38,7 +38,7 @@ func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Serv
 // Listen - прослушивание HTTP/HTTPS запросов сервера с указанного адреса.
 func (s *Server) Listen() error {
 	h := s.cfg.Host()
-	if s.cfg.TLS() {
+	if s.cfg.TLSEnable() {
 		return s.app.ListenTLS(h, s.cfg.TLSPem(), s.cfg.TLSKey())
 	}
 	return s.app.Listen(h)
