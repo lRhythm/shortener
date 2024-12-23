@@ -56,7 +56,9 @@ func Start() {
 	go func() {
 		<-sCh
 		logger.Info("server shutting down")
-		_ = s.Shutdown()
+		if err = s.Shutdown(); err != nil {
+			logger.Info("shutting down err:", err)
+		}
 	}()
 
 	logger.Info("server started")
