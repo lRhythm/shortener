@@ -15,11 +15,16 @@ type (
 
 // Cfg - структура описывающая конфигурацию сервиса.
 type Cfg struct {
-	ServerAddress   serverAddress   `env:"SERVER_ADDRESS"`
-	BaseURL         baseURL         `env:"BASE_URL"`
-	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH"`
-	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN"`
-	CookieSecretKey string          `env:"COOKIE_SECRET_KEY" envDefault:"o04n+9H6PWZs8PSxQqh9R1bWDL3sEUMfzx1gg0XTWns="`
+	ServerAddress   serverAddress   `env:"SERVER_ADDRESS" json:"server_address"`
+	BaseURL         baseURL         `env:"BASE_URL" json:"base_url"`
+	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH" json:"file_storage_path"`
+	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN" json:"database_dsn"`
+	EnableHTTPS     *bool           `env:"ENABLE_HTTPS" json:"enable_https"`
+	Config          string          `env:"CONFIG"`
+
+	TLSPemPath      string `env:"TLS_PEM" envDefault:"../../configs/tls.pem"`
+	TLSKeyPath      string `env:"TLS_KEY" envDefault:"../../configs/tls.key"`
+	CookieSecretKey string `env:"COOKIE_SECRET_KEY" envDefault:"o04n+9H6PWZs8PSxQqh9R1bWDL3sEUMfzx1gg0XTWns="`
 }
 
 // Host - получение адреса запуска сервиса.
@@ -45,6 +50,25 @@ func (c *Cfg) File() string {
 func (c *Cfg) DSN() (string, bool) {
 	dsn := string(c.DatabaseDSN)
 	return dsn, len(dsn) > 0
+}
+
+// TLSEnable - получение флага активности HTTPS.
+func (c *Cfg) TLSEnable() bool {
+	if c.EnableHTTPS == nil {
+		// Если вдруг не был вызван Cfg.withDefault().
+		return false
+	}
+	return *c.EnableHTTPS
+}
+
+// TLSPem - получение пути к файлу *.pem.
+func (c *Cfg) TLSPem() string {
+	return c.TLSPemPath
+}
+
+// TLSKey - получение пути к файлу *.key.
+func (c *Cfg) TLSKey() string {
+	return c.TLSKeyPath
 }
 
 // CookieKey - получение ключа шифрования cookie.
