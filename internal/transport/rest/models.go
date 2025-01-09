@@ -21,6 +21,7 @@ type commonInterface interface {
 
 // URLInterface - интерфейс CRUD методов работы с URL.
 type URLInterface interface {
+	CountURL() (cnt uint, err error)
 	CreateShortURL(originalURL, address, userID string) (shortURL string, err error)
 	CreateBatch(rows models.Rows, address, userID string) (models.Rows, error)
 	GetOriginalURL(key string) (originalURL string, isDeleted bool, err error)
@@ -30,6 +31,7 @@ type URLInterface interface {
 
 // userInterface - интерфейс методов работы с пользователем.
 type userInterface interface {
+	CountUser() (cnt uint, err error)
 	GenerateUserID() string
 	ValidateUserID(userID string) error
 }
@@ -42,6 +44,7 @@ type cfgInterface interface {
 	TLSPem() string
 	TLSKey() string
 	CookieKey() string
+	Trusted() string
 }
 
 // Server - основной объект пакета для взаимодействия.

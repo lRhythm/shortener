@@ -14,13 +14,13 @@ import (
 func (s *Server) setupHandlers() *Server {
 	router := s.app.Group(s.cfg.Path())
 	router.Get("/ping", s.PingHandler)
+	router.Get("/api/internal/stats", s.trustedSubnetMiddleware, s.APIInternalStatsHandler)
 	router.Get(fmt.Sprintf("/:%s", pathParamID), s.GetHandler)
 	router.Get("/api/user/urls", s.authenticateMiddleware, s.APIUserUrlsGetHandler)
 	router.Delete("/api/user/urls", s.authenticateMiddleware, s.APIUserUrlsDeleteHandler)
-	router.Use(s.registerMiddleware)
-	router.Post("/api/shorten", s.APICreateHandler)
-	router.Post("/api/shorten/batch", s.APICreateBatchHandler)
-	router.Post("/", s.CreateHandler)
+	router.Post("/api/shorten", s.registerMiddleware, s.APICreateHandler)
+	router.Post("/api/shorten/batch", s.registerMiddleware, s.APICreateBatchHandler)
+	router.Post("/", s.registerMiddleware, s.CreateHandler)
 	return s
 }
 
@@ -30,6 +30,19 @@ func (s *Server) PingHandler(c *fiber.Ctx) error {
 		return internalServerErrorResponse(c)
 	}
 	return c.Status(fiber.StatusOK).Send(nil)
+}
+
+// APIInternalStatsHandler - обработчик маршрута получения статистики: кол-ва сокращенных URL и кол-ва пользователей.
+func (s *Server) APIInternalStatsHandler(c *fiber.Ctx) error {
+	countURL, err := s.service.CountURL()
+	if err != nil {
+		return internalServerErrorResponse(c)
+	}
+	countUser, err := s.service.CountUser()
+	if err != nil {
+		return internalServerErrorResponse(c)
+	}
+	return c.Status(fiber.StatusOK).JSON(newStatsResponse(countURL, countUser))
 }
 
 // APICreateHandler - обработчик маршрута создания сокращенного URL.
@@ -45,7 +58,6 @@ func (s *Server) APICreateHandler(c *fiber.Ctx) error {
 		return badRequestResponse(c)
 	}
 	shortURL, err := s.service.CreateShortURL(req.OriginalURL, a, userID(c))
-
 	if err != nil {
 		if errors.Is(err, models.ErrConflict) {
 			return c.Status(fiber.StatusConflict).JSON(newCreateResponse(shortURL))

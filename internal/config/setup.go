@@ -24,13 +24,16 @@ func New() (*Cfg, error) {
 
 // withFlags - поддержка флагов для заполнения config.
 func (c *Cfg) withFlags() *Cfg {
-	sa := new(serverAddress)
-	bu := new(baseURL)
-	fsp := new(fileStoragePath)
-	dd := new(databaseDSN)
-	var tls bool
-	var config string
-	var needParse bool
+	var (
+		sa        = new(serverAddress)
+		bu        = new(baseURL)
+		fsp       = new(fileStoragePath)
+		dd        = new(databaseDSN)
+		tls       bool
+		trusted   string
+		config    string
+		needParse bool
+	)
 	if flag.Lookup("a") == nil {
 		_ = flag.Value(sa)
 		flag.Var(sa, "a", "Net address host:port")
@@ -55,37 +58,44 @@ func (c *Cfg) withFlags() *Cfg {
 		flag.BoolVar(&tls, "s", false, "Enable HTTPS (TLS)")
 		needParse = true
 	}
+	if flag.Lookup("t") == nil {
+		flag.StringVar(&trusted, "t", "", "CIDR (subnet mask)")
+		needParse = true
+	}
 	if flag.Lookup("c") == nil {
-		flag.StringVar(&config, "c", "", "Config file path (example: ./configs/config.json)")
+		flag.StringVar(&config, "c", "", "Config file path (example: ../../configs/config.json)")
 		needParse = true
 	}
 	if flag.Lookup("config") == nil {
-		flag.StringVar(&config, "config", "", "Config file path (example: ./configs/config.json)")
+		flag.StringVar(&config, "config", "", "Config file path (example: ../../configs/config.json)")
 		needParse = true
 	}
 	if needParse {
 		flag.Parse()
 	}
-	if *sa != "" && c.ServerAddress == "" {
+	if len(*sa) > 0 && len(c.ServerAddress) == 0 {
 		c.ServerAddress = *sa
 	}
-	if *bu != "" && c.BaseURL == "" {
+	if len(*bu) > 0 && len(c.BaseURL) == 0 {
 		c.BaseURL = *bu
 	}
-	if *fsp != "" && c.FileStoragePath == "" {
+	if len(*fsp) > 0 && len(c.FileStoragePath) == 0 {
 		c.FileStoragePath = *fsp
 	}
-	if *dd != "" && c.DatabaseDSN == "" {
+	if len(*dd) > 0 && len(c.DatabaseDSN) == 0 {
 		c.DatabaseDSN = *dd
 	}
+	if len(trusted) > 0 && len(c.TrustedSubnet) == 0 {
+		c.TrustedSubnet = trusted
+	}
 	flag.Visit(func(f *flag.Flag) {
-		if f.Name == "c" || f.Name == "config" {
+		switch f.Name {
+		case "c", "config":
 			c.Config = config
-		}
-	})
-	flag.Visit(func(f *flag.Flag) {
-		if f.Name == "s" {
-			*c.EnableHTTPS = tls
+		case "s":
+			var b bool
+			b = tls
+			c.EnableHTTPS = &b
 		}
 	})
 	return c
@@ -117,6 +127,9 @@ func (c *Cfg) withConfig() (*Cfg, error) {
 		}
 		if c.EnableHTTPS == nil && *config.EnableHTTPS {
 			c.EnableHTTPS = config.EnableHTTPS
+		}
+		if len(c.TrustedSubnet) == 0 && len(config.TrustedSubnet) > 0 {
+			c.TrustedSubnet = config.TrustedSubnet
 		}
 	}
 	return c, nil

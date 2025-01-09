@@ -20,6 +20,22 @@ func (db *DB) Ping() error {
 	return db.db.Ping()
 }
 
+// CountURL - выполнение запроса получения количества сокращённых URL в сервисе.
+func (db *DB) CountURL() (uint, error) {
+	var cnt uint
+	query := `select count(id) from urls`
+	err := db.db.Get(&cnt, query)
+	return cnt, err
+}
+
+// CountUser - выполнение запроса получения количества пользователей в сервисе.
+func (db *DB) CountUser() (uint, error) {
+	var cnt uint
+	query := `select count(distinct(user_id)) from urls`
+	err := db.db.Get(&cnt, query)
+	return cnt, err
+}
+
 // Put - выполнение запроса добавления в БД сокращенного URL.
 func (db *DB) Put(shortURL, originalURL, userID string) error {
 	query := `insert into urls (short_url, original_url, user_id) values ($1, $2, $3)`

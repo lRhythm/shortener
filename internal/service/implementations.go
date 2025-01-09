@@ -14,6 +14,16 @@ func (c *Client) Ping() error {
 	return c.storage.Ping()
 }
 
+// CountURL - количество сокращённых URL в сервисе.
+func (c *Client) CountURL() (cnt uint, err error) {
+	return c.storage.CountURL()
+}
+
+// CountUser - количество пользователей в сервисе.
+func (c *Client) CountUser() (cnt uint, err error) {
+	return c.storage.CountUser()
+}
+
 // CreateShortURL - логика маршрута создания сокращенного URL.
 func (c *Client) CreateShortURL(originalURL, address, userID string) (string, error) {
 	var err, e error
