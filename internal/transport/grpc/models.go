@@ -1,16 +1,13 @@
-package rest
+package grpc
 
-import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/sirupsen/logrus"
-
-	"github.com/lRhythm/shortener/internal/transport"
-)
+import "github.com/lRhythm/shortener/internal/transport"
 
 // Server - основной объект пакета для взаимодействия.
 type Server struct {
-	app     *fiber.App
-	logs    *logrus.Logger
+	UnimplementedShortenerServer
+
 	cfg     transport.CfgInterface
 	service transport.ServiceInterface
 }
+
+const userID = "user_id"

@@ -1,0 +1,69 @@
+// cd internal/transport/grpc
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative shortener.proto
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package grpc;
+
+option go_package = "internal/transport/grpc";
+
+message InternalStatsResponse {
+  uint32 users = 1;
+  uint32 urls = 2;
+}
+
+message UrlCreateRequest {
+  string url = 1;
+}
+
+message UrlCreateResponse {
+  string result = 1;
+}
+
+message UrlCreateBatchRequest {
+  message UrlItem {
+    string original_url = 1;
+    string correlation_id = 2;
+  }
+  repeated UrlItem urls = 1;
+}
+
+message UrlCreateBatchResponse {
+  message UrlItem {
+    string short_url = 1;
+    string correlation_id = 2;
+  }
+  repeated UrlItem urls = 1;
+}
+
+message UrlGetRequest {
+  string id = 1;
+}
+
+message UrlGetResponse {
+  string url = 1;
+}
+
+message UserUrlListResponse {
+  message UrlItem {
+    string short_url = 1;
+    string original_url = 2;
+  }
+  repeated UrlItem urls = 1;
+}
+
+message UserUrlDeleteRequest {
+  repeated string urls = 1;
+}
+
+service Shortener {
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc InternalStats(google.protobuf.Empty) returns (InternalStatsResponse);
+  rpc UrlCreate(UrlCreateRequest) returns (UrlCreateResponse);
+  rpc UrlCreateBatch(UrlCreateBatchRequest) returns (UrlCreateBatchResponse);
+  rpc UrlGet(UrlGetRequest) returns (UrlGetResponse);
+  rpc UserUrlList(google.protobuf.Empty) returns (UserUrlListResponse);
+  rpc UserUrlDelete(UserUrlDeleteRequest) returns (google.protobuf.Empty);
+}
