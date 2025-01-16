@@ -4,14 +4,14 @@ import "github.com/lRhythm/shortener/internal/models"
 
 // Функция convertURLCreateBatchRequestItemsToRows - преобразование списка из запроса метода пакетного создания URL
 // в список для сервисного слоя.
-func convertURLCreateBatchRequestItemsToRows(URLs []*UrlCreateBatchRequest_UrlItem) models.Rows {
+func convertURLCreateBatchRequestItemsToRows(URLs []*LinkCreateBatchRequest_LinkItem) models.Rows {
 	rows := make(models.Rows, 0, len(URLs))
 	for _, item := range URLs {
-		if len(item.OriginalUrl) == 0 || len(item.CorrelationId) == 0 {
+		if len(item.OriginalLink) == 0 || len(item.CorrelationId) == 0 {
 			continue
 		}
 		rows = append(rows, models.Row{
-			OriginalURL:   item.OriginalUrl,
+			OriginalURL:   item.OriginalLink,
 			CorrelationID: item.CorrelationId,
 		})
 	}
@@ -20,11 +20,11 @@ func convertURLCreateBatchRequestItemsToRows(URLs []*UrlCreateBatchRequest_UrlIt
 
 // Функция convertRowsToURLCreateBatchResponseItems - преобразование списка URL из сервисного слоя в список URL
 // для ответа метода пакетного создания URL.
-func convertRowsToURLCreateBatchResponseItems(rows models.Rows) []*UrlCreateBatchResponse_UrlItem {
-	items := make([]*UrlCreateBatchResponse_UrlItem, 0, len(rows))
+func convertRowsToURLCreateBatchResponseItems(rows models.Rows) []*LinkCreateBatchResponse_LinkItem {
+	items := make([]*LinkCreateBatchResponse_LinkItem, 0, len(rows))
 	for _, row := range rows {
-		items = append(items, &UrlCreateBatchResponse_UrlItem{
-			ShortUrl:      row.ShortURL,
+		items = append(items, &LinkCreateBatchResponse_LinkItem{
+			ShortLink:     row.ShortURL,
 			CorrelationId: row.CorrelationID,
 		})
 	}
@@ -33,12 +33,12 @@ func convertRowsToURLCreateBatchResponseItems(rows models.Rows) []*UrlCreateBatc
 
 // Функция convertRowsToUserURListResponseItems - преобразование списка URL из сервисного слоя в список URL
 // для ответа метода пакетного получения URL пользователя.
-func convertRowsToUserURListResponseItems(rows models.Rows) []*UserUrlListResponse_UrlItem {
-	items := make([]*UserUrlListResponse_UrlItem, 0, len(rows))
+func convertRowsToUserURListResponseItems(rows models.Rows) []*UserLinkListResponse_LinkItem {
+	items := make([]*UserLinkListResponse_LinkItem, 0, len(rows))
 	for _, row := range rows {
-		items = append(items, &UserUrlListResponse_UrlItem{
-			ShortUrl:    row.ShortURL,
-			OriginalUrl: row.OriginalURL,
+		items = append(items, &UserLinkListResponse_LinkItem{
+			ShortLink:    row.ShortURL,
+			OriginalLink: row.OriginalURL,
 		})
 	}
 	return items

@@ -35,48 +35,48 @@ func (s *Server) InternalStats(ctx context.Context, in *emptypb.Empty) (*Interna
 	}
 	return &InternalStatsResponse{
 		Users: uint32(countUser),
-		Urls:  uint32(countURL),
+		Links: uint32(countURL),
 	}, nil
 }
 
-// UrlCreate - метод создания сокращенного URL.
-func (s *Server) UrlCreate(ctx context.Context, in *UrlCreateRequest) (*UrlCreateResponse, error) {
+// LinkCreate - метод создания сокращенного URL.
+func (s *Server) LinkCreate(ctx context.Context, in *LinkCreateRequest) (*LinkCreateResponse, error) {
 	user, err := s.newUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	shortURL, err := s.service.CreateShortURL(in.Url, "", user)
+	shortURL, err := s.service.CreateShortURL(in.Link, "", user)
 	if err != nil {
 		if errors.Is(err, models.ErrConflict) {
 			// Conflict.
-			return &UrlCreateResponse{
+			return &LinkCreateResponse{
 				Result: shortURL,
 			}, nil
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &UrlCreateResponse{
+	return &LinkCreateResponse{
 		Result: shortURL,
 	}, nil
 }
 
-// UrlCreateBatch - метод пакетного создания сокращенных URL.
-func (s *Server) UrlCreateBatch(ctx context.Context, in *UrlCreateBatchRequest) (*UrlCreateBatchResponse, error) {
+// LinkCreateBatch - метод пакетного создания сокращенных URL.
+func (s *Server) LinkCreateBatch(ctx context.Context, in *LinkCreateBatchRequest) (*LinkCreateBatchResponse, error) {
 	user, err := s.newUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := s.service.CreateBatch(convertURLCreateBatchRequestItemsToRows(in.Urls), "", user)
+	rows, err := s.service.CreateBatch(convertURLCreateBatchRequestItemsToRows(in.Links), "", user)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &UrlCreateBatchResponse{
-		Urls: convertRowsToURLCreateBatchResponseItems(rows),
+	return &LinkCreateBatchResponse{
+		Links: convertRowsToURLCreateBatchResponseItems(rows),
 	}, nil
 }
 
-// UrlGet - метод получения оригинального URL по сокращенному URL.
-func (s *Server) UrlGet(ctx context.Context, in *UrlGetRequest) (*UrlGetResponse, error) {
+// LinkGet - метод получения оригинального URL по сокращенному URL.
+func (s *Server) LinkGet(ctx context.Context, in *LinkGetRequest) (*LinkGetResponse, error) {
 	if len(in.Id) == 0 {
 		// Bad Request.
 		return nil, status.Error(codes.InvalidArgument, "missing or empty id")
@@ -88,7 +88,7 @@ func (s *Server) UrlGet(ctx context.Context, in *UrlGetRequest) (*UrlGetResponse
 		// Одним из решений будет создание пользовательской ошибки (например models.NoRows)
 		// и возврат из storage слоя при её возникновении, например вместо sql.ErrNoRows.
 		// Далее данную ошибку обработать как Not Found.
-		// Подобная реализация представлена в UrlCreate.
+		// Подобная реализация представлена в LinkCreate.
 		//if errors.Is(err, models.ErrNoRows) {
 		//	// Not Found.
 		//	return nil, status.Error(codes.NotFound, "urls not found")
@@ -99,13 +99,13 @@ func (s *Server) UrlGet(ctx context.Context, in *UrlGetRequest) (*UrlGetResponse
 		// Gone.
 		return nil, status.Error(codes.NotFound, "url is deleted")
 	}
-	return &UrlGetResponse{
-		Url: originalURL,
+	return &LinkGetResponse{
+		Link: originalURL,
 	}, nil
 }
 
-// UserUrlList - метод получения сокращенных URL пользователя.
-func (s *Server) UserUrlList(ctx context.Context, in *emptypb.Empty) (*UserUrlListResponse, error) {
+// UserLinkList - метод получения сокращенных URL пользователя.
+func (s *Server) UserLinkList(ctx context.Context, in *emptypb.Empty) (*UserLinkListResponse, error) {
 	user, err := s.userID(ctx)
 	if err != nil {
 		return nil, err
@@ -118,18 +118,18 @@ func (s *Server) UserUrlList(ctx context.Context, in *emptypb.Empty) (*UserUrlLi
 		// NoContent.
 		return nil, nil
 	}
-	return &UserUrlListResponse{
-		Urls: convertRowsToUserURListResponseItems(rows),
+	return &UserLinkListResponse{
+		Links: convertRowsToUserURListResponseItems(rows),
 	}, nil
 }
 
-// UserUrlDelete - метод удаления сокращенных URL пользователя.
-func (s *Server) UserUrlDelete(ctx context.Context, in *UserUrlDeleteRequest) (*emptypb.Empty, error) {
+// UserLinkDelete - метод удаления сокращенных URL пользователя.
+func (s *Server) UserLinkDelete(ctx context.Context, in *UserLinkDeleteRequest) (*emptypb.Empty, error) {
 	user, err := s.userID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	go s.service.DeleteUserURLs(in.Urls, user)
+	go s.service.DeleteUserURLs(in.Links, user)
 	// Accepted.
 	return nil, nil
 }

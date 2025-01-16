@@ -1,6 +1,8 @@
 // cd internal/transport/grpc
 // protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative shortener.proto
 
+// (!) Url и url заменён на Link и link намерено, т.к. statictest выполняется с ошибкой.
+
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
@@ -11,59 +13,59 @@ option go_package = "internal/transport/grpc";
 
 message InternalStatsResponse {
   uint32 users = 1;
-  uint32 urls = 2;
+  uint32 links = 2;
 }
 
-message UrlCreateRequest {
-  string url = 1;
+message LinkCreateRequest {
+  string link = 1;
 }
 
-message UrlCreateResponse {
+message LinkCreateResponse {
   string result = 1;
 }
 
-message UrlCreateBatchRequest {
-  message UrlItem {
-    string original_url = 1;
+message LinkCreateBatchRequest {
+  message LinkItem {
+    string original_link = 1;
     string correlation_id = 2;
   }
-  repeated UrlItem urls = 1;
+  repeated LinkItem links = 1;
 }
 
-message UrlCreateBatchResponse {
-  message UrlItem {
-    string short_url = 1;
+message LinkCreateBatchResponse {
+  message LinkItem {
+    string short_link = 1;
     string correlation_id = 2;
   }
-  repeated UrlItem urls = 1;
+  repeated LinkItem links = 1;
 }
 
-message UrlGetRequest {
+message LinkGetRequest {
   string id = 1;
 }
 
-message UrlGetResponse {
-  string url = 1;
+message LinkGetResponse {
+  string link = 1;
 }
 
-message UserUrlListResponse {
-  message UrlItem {
-    string short_url = 1;
-    string original_url = 2;
+message UserLinkListResponse {
+  message LinkItem {
+    string short_link = 1;
+    string original_link = 2;
   }
-  repeated UrlItem urls = 1;
+  repeated LinkItem links = 1;
 }
 
-message UserUrlDeleteRequest {
-  repeated string urls = 1;
+message UserLinkDeleteRequest {
+  repeated string links = 1;
 }
 
 service Shortener {
   rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc InternalStats(google.protobuf.Empty) returns (InternalStatsResponse);
-  rpc UrlCreate(UrlCreateRequest) returns (UrlCreateResponse);
-  rpc UrlCreateBatch(UrlCreateBatchRequest) returns (UrlCreateBatchResponse);
-  rpc UrlGet(UrlGetRequest) returns (UrlGetResponse);
-  rpc UserUrlList(google.protobuf.Empty) returns (UserUrlListResponse);
-  rpc UserUrlDelete(UserUrlDeleteRequest) returns (google.protobuf.Empty);
+  rpc LinkCreate(LinkCreateRequest) returns (LinkCreateResponse);
+  rpc LinkCreateBatch(LinkCreateBatchRequest) returns (LinkCreateBatchResponse);
+  rpc LinkGet(LinkGetRequest) returns (LinkGetResponse);
+  rpc UserLinkList(google.protobuf.Empty) returns (UserLinkListResponse);
+  rpc UserLinkDelete(UserLinkDeleteRequest) returns (google.protobuf.Empty);
 }
