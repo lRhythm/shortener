@@ -1,6 +1,10 @@
 package rest
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"strings"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 // cookieUserID - ключ в (*fiber.Ctx).Locals идентификатором пользователя из cookies.
 const cookieUserID = "userId"
@@ -13,6 +17,14 @@ func setUserID(c *fiber.Ctx, userID string) {
 // userID - получение из (*fiber.Ctx).Locals идентификатора пользователя из cookies.
 func userID(c *fiber.Ctx) string {
 	return c.Locals(cookieUserID).(string)
+}
+
+// trustedSubnetMiddleware - middleware проверки вхождения IP-адреса клиента в доверенную подсеть.
+func (s *Server) trustedSubnetMiddleware(c *fiber.Ctx) error {
+	if t := s.cfg.Trusted(); len(t) > 0 && strings.HasPrefix(c.Get("X-Real-IP", ""), t) {
+		return c.Next()
+	}
+	return c.Status(fiber.StatusForbidden).Send(nil)
 }
 
 // authenticateMiddleware - middleware аутентификации пользователя по идентификатору из cookies.

@@ -36,6 +36,20 @@ func errorResponse(c *fiber.Ctx, status int) error {
 	return c.Status(status).Send(nil)
 }
 
+// statsResponse - response маршрута получения статистики.
+type statsResponse struct {
+	URLs  uint `json:"urls"`
+	Users uint `json:"users"`
+}
+
+// newStatsResponse - конструктор statsResponse.
+func newStatsResponse(countURL, countUser uint) *statsResponse {
+	return &statsResponse{
+		URLs:  countURL,
+		Users: countUser,
+	}
+}
+
 // createResponse - response создания сокращенного URL.
 type createResponse struct {
 	Result string `json:"result"`

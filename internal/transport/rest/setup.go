@@ -8,6 +8,8 @@ import (
 	_ "net/http/pprof"
 	"time"
 
+	"github.com/lRhythm/shortener/internal/transport"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
@@ -17,7 +19,7 @@ import (
 )
 
 // New - конструктор Server.
-func New(logs *logrus.Logger, cfg cfgInterface, service serviceInterface) (*Server, error) {
+func New(logs *logrus.Logger, cfg transport.CfgInterface, service transport.ServiceInterface) (*Server, error) {
 	if logs == nil {
 		return nil, errors.New("logs must not be nil")
 	}

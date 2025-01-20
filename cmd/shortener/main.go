@@ -1,5 +1,5 @@
 /*
-Package main - HTTP сервис сокращения URL.
+Package main - HTTP (REST api) сервис сокращения URL.
 */
 package main
 
@@ -19,5 +19,5 @@ func main() {
 	// go run -ldflags "-X main.buildVersion=v1.0.1 -X 'main.buildDate=$(date +'%Y/%m/%d %H:%M:%S')'" ./cmd/shortener/main.go
 	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
-	app.Start()
+	app.StartREST()
 }

@@ -21,6 +21,81 @@ import (
 	"github.com/lRhythm/shortener/internal/storage"
 )
 
+// [GET] /api/internal/stats
+func TestApiInternalStatsHandler(t *testing.T) {
+	correctIP, wrongIP := "127.0.0.1", "192.168.0.1"
+
+	t.Setenv("TRUSTED_SUBNET", correctIP) // Mock env.
+
+	cfg, _ := config.New()
+	db, _ := storage.NewMemory(cfg.File())
+	logic := service.New(
+		service.WithStorage(db),
+	)
+	s, _ := New(
+		logs.New(),
+		cfg,
+		logic,
+	)
+	f := fiber.New()
+	f.Get("/api/internal/stats", s.trustedSubnetMiddleware, s.APIInternalStatsHandler)
+
+	// Создание в хранилище сокращённых URL для дальнейшей проверки ответа маршрута.
+	var ss []string
+	uid := uuid.NewString()
+	for _, ou := range []string{"http://example.com", "https://ya.ru", "https://yandex.ru"} {
+		su, _ := logic.CreateShortURL(ou, "http://localhost:8080", uid)
+		u, _ := url.Parse(su)
+		ss = append(ss, strings.Trim(u.Path, "/"))
+	}
+
+	tests := []struct {
+		name      string
+		route     string
+		status    int
+		headerIP  string
+		countUser uint // Кол-во пользователей.
+		countURL  uint // Кол-во сокращенных URL.
+	}{
+		{
+			name:      "1. 200 - success",
+			route:     "/api/internal/stats",
+			status:    fiber.StatusOK,
+			headerIP:  correctIP,
+			countUser: 1,
+			countURL:  uint(len(ss)),
+		},
+		{
+			name:     "2. 403 - error: headers.X-Real-IP bad value",
+			route:    "/api/internal/stats",
+			status:   fiber.StatusForbidden,
+			headerIP: wrongIP,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, test.route, nil)
+			req.Header.Set("X-Real-IP", test.headerIP)
+			resp, _ := f.Test(req, -1)
+			require.Equal(t, test.status, resp.StatusCode)
+			b, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			err = resp.Body.Close()
+			require.NoError(t, err)
+			if test.status == fiber.StatusOK {
+				var rb statsResponse
+				err = json.Unmarshal(b, &rb)
+				require.NoError(t, err)
+				assert.Equal(t, test.countUser, rb.Users)
+				assert.Equal(t, test.countURL, rb.URLs)
+			}
+			if test.status == fiber.StatusForbidden {
+				assert.True(t, len(string(b)) == 0)
+			}
+		})
+	}
+}
+
 // [POST] /api/shorten
 func TestApiCreateHandler(t *testing.T) {
 	cfg, _ := config.New()

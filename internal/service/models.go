@@ -5,6 +5,8 @@ import "github.com/lRhythm/shortener/internal/models"
 // RepositoryInterface - интерфейс для имплементации хранилищем.
 type RepositoryInterface interface {
 	commonInterface
+	CountURL() (cnt uint, err error)
+	CountUser() (cnt uint, err error)
 	Put(shortURL, originalURL, userID string) (err error)
 	Batch(rows models.Rows, userID string) (err error)
 	GetOriginalURL(shortURL string) (originalURL string, isDeleted bool, err error)

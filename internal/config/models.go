@@ -20,6 +20,7 @@ type Cfg struct {
 	FileStoragePath fileStoragePath `env:"FILE_STORAGE_PATH" json:"file_storage_path"`
 	DatabaseDSN     databaseDSN     `env:"DATABASE_DSN" json:"database_dsn"`
 	EnableHTTPS     *bool           `env:"ENABLE_HTTPS" json:"enable_https"`
+	TrustedSubnet   string          `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
 	Config          string          `env:"CONFIG"`
 
 	TLSPemPath      string `env:"TLS_PEM" envDefault:"../../configs/tls.pem"`
@@ -74,4 +75,9 @@ func (c *Cfg) TLSKey() string {
 // CookieKey - получение ключа шифрования cookie.
 func (c *Cfg) CookieKey() string {
 	return c.CookieSecretKey
+}
+
+// Trusted - строковое представление бесклассовой адресации (CIDR) доверенной подсети.
+func (c *Cfg) Trusted() string {
+	return c.TrustedSubnet
 }

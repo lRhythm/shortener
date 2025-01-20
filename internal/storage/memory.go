@@ -18,6 +18,22 @@ func (m *Memory) Ping() error {
 	return nil
 }
 
+// CountURL - операция получения количества сокращённых URL в сервисе.
+func (m *Memory) CountURL() (uint, error) {
+	return uint(len(*m.storage)), nil
+}
+
+// CountUser - операция получения количества пользователей в сервисе.
+func (m *Memory) CountUser() (uint, error) {
+	cm := make(map[string]bool)
+	for _, v := range *m.storage {
+		if _, ok := cm[v.UserID]; !ok {
+			cm[v.UserID] = true
+		}
+	}
+	return uint(len(cm)), nil
+}
+
 // Put - операция добавления в память сокращенного URL.
 func (m *Memory) Put(shortURL, originalURL, userID string) error {
 	for _, row := range *m.storage {
